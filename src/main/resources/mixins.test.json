@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "package": "com.chryfi.test.mixins",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "mixins.test.refmap.json",
+  "mixins": [
+  ],
+  "client": [
+    "MixinWindow"
+  ],
+  "minVersion": "0.8"
+}
