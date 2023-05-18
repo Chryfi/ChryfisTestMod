@@ -6,7 +6,8 @@
   "mixins": [
   ],
   "client": [
-    "MixinWindow"
+    "MixinWindow",
+    "MixinMinecraft"
   ],
   "minVersion": "0.8"
 }
