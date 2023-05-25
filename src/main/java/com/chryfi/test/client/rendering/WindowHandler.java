@@ -1,20 +1,35 @@
 package com.chryfi.test.client.rendering;
 
+import com.chryfi.test.Test;
+import com.chryfi.test.utils.rendering.GLUtils;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.MouseHandler;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.Resource;
 import org.joml.Math;
 import org.joml.Matrix4f;
 import org.joml.Vector2d;
 import org.lwjgl.glfw.GLFW;
+import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 
+import javax.imageio.ImageIO;
+import java.awt.image.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
+import java.nio.ShortBuffer;
+import java.util.Optional;
+
 public class WindowHandler {
-    private static int tick = 0;
-    private static Vector2d pos;
-    private static Vector2d velocity;
+    private static long tick = 0;
+    private static Vector2d pos = new Vector2d(1280 / 2,720 / 2);
+    private static Vector2d velocity = new Vector2d(0,0);
     private static int width = 1280;
     private static int height = 720;
 
@@ -29,6 +44,11 @@ public class WindowHandler {
         RenderSystem.viewport(0, 0, windowWidth, windowHeight);
 
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        /*
+         * enable depth test so the GUI can render on top.
+         * Translate this texture on the z axis in negative direction
+         */
+        RenderSystem.enableDepthTest();
 
         RenderSystem.enableTexture();
         Matrix4f matrix4f = (new Matrix4f()).setOrtho(0.0F, windowWidth, windowHeight, 0.0F, 1000.0F, 3000F);
@@ -38,8 +58,6 @@ public class WindowHandler {
 
         BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
         bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-
-        compute();
 
         int x0 = (int) Math.round(pos.x);
         int y0 = (int) Math.round(pos.y);
@@ -52,6 +70,8 @@ public class WindowHandler {
         Object window = Minecraft.getInstance().getWindow();
         ((IMixinWindow) window).resize(width, height);
 
+        RenderSystem.disableDepthTest();
+
         tick++;
     }
 
@@ -59,8 +79,8 @@ public class WindowHandler {
      * Update position, collision testing and resolve step.
      */
     public static void compute() {
-        int windowWidth = getGLFWWindowSize()[0];
-        int windowHeight = getGLFWWindowSize()[1];
+        int windowWidth = GLUtils.getGLFWWindowSize()[0];
+        int windowHeight = GLUtils.getGLFWWindowSize()[1];
 
         if (pos == null) {
             pos = new Vector2d();
@@ -105,27 +125,11 @@ public class WindowHandler {
         return new int[]{x, y};
     }
 
-    private static int[] getGLFWWindowSize() {
-        int[] width = new int[1];
-        int[] height = new int[1];
-
-        GLFW.glfwGetWindowSize(Minecraft.getInstance().getWindow().getWindow(), width, height);
-
-        return new int[]{width[0], height[0]};
-    }
-
-    private static int getCurrentFramebufferID() {
-        int[] oldFramebufferId = new int[1];
-        GL20.glGetIntegerv(GL30.GL_DRAW_FRAMEBUFFER_BINDING, oldFramebufferId);
-
-        return oldFramebufferId[0];
-    }
-
     private static void buildUVQuad(BufferBuilder bufferBuilder, int x0, int y0, int x1, int y1) {
-        bufferBuilder.vertex(x1, y0, 0).uv(1,1).endVertex();
-        bufferBuilder.vertex(x0, y0, 0).uv(0,1).endVertex();
-        bufferBuilder.vertex(x0, y1, 0).uv(0,0).endVertex();
-        bufferBuilder.vertex(x1, y1, 0).uv(1,0).endVertex();
+        bufferBuilder.vertex(x1, y0, -500).uv(1,1).endVertex();
+        bufferBuilder.vertex(x0, y0, -500).uv(0,1).endVertex();
+        bufferBuilder.vertex(x0, y1, -500).uv(0,0).endVertex();
+        bufferBuilder.vertex(x1, y1, -500).uv(1,0).endVertex();
     }
 
 }
