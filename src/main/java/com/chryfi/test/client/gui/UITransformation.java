@@ -1,5 +1,7 @@
 package com.chryfi.test.client.gui;
 
+import org.checkerframework.checker.guieffect.qual.UI;
+
 public class UITransformation {
     private Unit x = new Unit(0);
     private Unit y = new Unit(0);
@@ -96,6 +98,33 @@ public class UITransformation {
     }
 
     /**
+     * Entry point for resizing the children
+     */
+    public void resize() {
+        this.resize(null);
+    }
+
+    /**
+     * Recursive method for resizing
+     * @param last
+     */
+    private void resize(UIElement last) {
+        this.apply(last);
+
+        last = null;
+        for (UIElement element : this.target.getChildren()) {
+            element.transformation.resize(last);
+
+            /*
+             * Position absolute removes an element from the document flow
+             */
+            if (element.transformation.getPositionType() != UITransformation.POSITION.ABSOLUTE) {
+                last = element;
+            }
+        }
+    }
+
+    /**
      * Calculates stuff, very important. Traverse the UI tree and call this method.
      * @param last the element that was processed before this. This is needed to create document flow.
      *             Can be null
@@ -132,6 +161,7 @@ public class UITransformation {
         int marginBottom = this.calculatePixels(this.target.contentBox.getHeight(), this.getMarginBottom());
         int marginLeft = this.calculatePixels(this.target.contentBox.getWidth(), this.getMarginLeft());
         int marginRight = this.calculatePixels(this.target.contentBox.getWidth(), this.getMarginRight());
+        /* debugging purpose */
         this.target.margin = new int[]{marginTop, marginRight, marginBottom, marginLeft};
 
         this.target.flowArea.setHeight(marginTop + marginBottom + this.target.contentBox.getHeight());
@@ -141,23 +171,34 @@ public class UITransformation {
         this.target.contentBox.setX(marginLeft);
         this.target.contentBox.setY(marginTop);
 
+        /* target flowArea has now global coordinates - is now relative to the parent's contentBox */
+        this.target.flowArea.setX(parentContentBox.getX());
+        this.target.flowArea.setY(parentContentBox.getY());
+
         int anchorX = this.calculatePixels(this.target.contentBox.getWidth(), this.anchorX);
         int anchorY = this.calculatePixels(this.target.contentBox.getHeight(), this.anchorY);
         int x = this.calculatePixels(parentContentBox.getWidth(), this.x) - anchorX;
         int y = this.calculatePixels(parentContentBox.getHeight(), this.y) - anchorY;
 
         if (this.position == POSITION.RELATIVE) {
-            int occupiedWidth = lastFlowArea.getX() - parentFlowArea.getX() + lastFlowArea.getWidth();
+            /*
+             * This code is responsible for document flow. Check if this element fit's
+             * in the gap between last element and the parent's border.
+             */
+            if (last != null) {
+                int occupiedWidth = lastFlowArea.getX() - parentContentBox.getX() + lastFlowArea.getWidth();
 
-            /* target flowArea has now global coordinates */
-            if (parentFlowArea.getWidth() - occupiedWidth >= this.target.flowArea.getWidth()) {
-                this.target.flowArea.setX(lastFlowArea.getX() + lastFlowArea.getWidth());
-                //TODO we need the biggest height of a row -> build some sort of chain that will be reset when going into the next row or so
-                this.target.flowArea.setY(lastFlowArea.getY());
-            } else {
-                //TODO we need the biggest height of a row -> build some sort of chain that will be reset when going into the next row or so
-                this.target.flowArea.setX(parentFlowArea.getX());
-                this.target.flowArea.setY(lastFlowArea.getY() + lastFlowArea.getHeight());
+                /*
+                 * target flowArea has now global coordinates
+                 */
+                if (parentContentBox.getWidth() - occupiedWidth >= this.target.flowArea.getWidth()) {
+                    this.target.flowArea.addX(occupiedWidth);
+                    //TODO we need the biggest height of a row -> build some sort of chain that will be reset when going into the next row or so
+                    this.target.flowArea.setY(lastFlowArea.getY());
+                } else {
+                    //TODO we need the biggest height of a row -> build some sort of chain that will be reset when going into the next row or so
+                    this.target.flowArea.setY(lastFlowArea.getY() + lastFlowArea.getHeight());
+                }
             }
 
             /* target contentBox has now global coordinates */
@@ -167,9 +208,13 @@ public class UITransformation {
             /* offset the position */
             this.target.contentBox.addX(x);
             this.target.contentBox.addY(y);
-        } else {
-            this.target.contentBox.setX(x);
-            this.target.contentBox.setY(y);
+        } else if (this.position == POSITION.ABSOLUTE){
+            /*
+             * TODO In CSS absolute positions it without document flow relative to the closest ancestor.
+             * What about an easy way of positioning with screen coordinates?
+             */
+            this.target.contentBox.addX(x);
+            this.target.contentBox.addY(y);
         }
     }
 

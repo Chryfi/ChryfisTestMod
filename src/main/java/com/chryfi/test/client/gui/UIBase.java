@@ -35,9 +35,9 @@ public class UIBase extends Screen {
         UIPropertyBuilder.setup(this.root)
                 .height(GLUtils.getGLFWWindowSize()[1])
                 .width(GLUtils.getGLFWWindowSize()[0])
-                .backgroundColor(1,1,1);
+                .backgroundColor(0.5F,0.5F,0.5F);
 
-        UIElement centeredExample = new UIElement();
+        /*UIElement centeredExample = new UIElement();
         UIPropertyBuilder.setup(centeredExample)
                 .width(0.5F)
                 .height(0.5F)
@@ -66,9 +66,58 @@ public class UIBase extends Screen {
                 .marginLeft(50)
                 .marginTop(40);
 
-        this.root.addChildren(centeredExample, test2, test3, test4);
+        this.root.addChildren(centeredExample, test2, test3, test4);*/
+
+
+        UIElement column = new UIElement();
+        UIPropertyBuilder.setup(column)
+                .width(0.3F)
+                .height(1F)
+                .marginLeft(30)
+                .backgroundColor(0,0,0,0);
+
+        UIElement row1 = createTestRow();
+
+        UIElement column2 = new UIElement();
+        UIPropertyBuilder.setup(column2)
+                .width(0.45F)
+                .height(1F);
+
+        UIElement column3 = new UIElement();
+        UIPropertyBuilder.setup(column3)
+                .width(0.45F)
+                .height(1F);
+
+        row1.addChildren(column2, column3);
+
+        column.addChildren(row1);
+
+        this.root.addChildren(createTestFilledColumn(), createTestFilledColumn(), column);
 
         this.root.resize();
+    }
+
+    private UIElement createTestRow() {
+        UIElement row = new UIElement();
+        UIPropertyBuilder.setup(row)
+                .width(1F)
+                .height(64)
+                .marginTop(10);
+
+        return row;
+    }
+
+    private UIElement createTestFilledColumn() {
+        UIElement column = new UIElement();
+        UIPropertyBuilder.setup(column)
+                .width(0.3F)
+                .height(1F)
+                .marginLeft(30)
+                .backgroundColor(0,0,0,0);
+
+        column.addChildren(createTestRow(), createTestRow(), createTestRow(), createTestRow(), createTestRow());
+
+        return column;
     }
 
     @Override

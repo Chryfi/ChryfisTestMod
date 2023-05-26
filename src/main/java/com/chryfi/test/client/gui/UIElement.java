@@ -37,9 +37,9 @@ public class UIElement extends GuiComponent implements GuiEventListener {
     protected UIElement parent;
 
     public UIElement() {
-        this.background = new Color(Math.round(Math.random()*2F)/2F,
-                Math.round(Math.random()*2F)/2F,
-                Math.round(Math.random()*2F)/2F);
+        this.background = new Color((float)Math.random(),
+                (float)Math.random(),
+                (float)Math.random());
     }
 
     /*
@@ -91,23 +91,7 @@ public class UIElement extends GuiComponent implements GuiEventListener {
      * This should be called before the first render and when resizing.
      */
     public void resize() {
-        this.transformation.apply(null);
-
-        UIElement last = null;
-        for (UIElement element : this.getChildren()) {
-            element.transformation.apply(last);
-
-            /*
-             * Position absolute removes an element from the document flow
-             *
-             * TODO OOOPS it's not decoupled :(
-             *  solution maybe: totally handoff the traversal to UITransformation. It has a reference to
-             * this UIElement and can therefore use the method to get the children etc.
-             */
-            if (element.transformation.getPositionType() != UITransformation.POSITION.ABSOLUTE) {
-                last = element;
-            }
-        }
+        this.transformation.resize();
     }
 
     public void render(GuiContext context) {
@@ -121,7 +105,7 @@ public class UIElement extends GuiComponent implements GuiEventListener {
                     this.background.getRGBAColor());
         }
 
-        GuiComponent.fill(new PoseStack(), this.contentBox.getX(), this.contentBox.getY() - this.margin[0],
+        /*GuiComponent.fill(new PoseStack(), this.contentBox.getX(), this.contentBox.getY() - this.margin[0],
                 this.contentBox.getX() + this.contentBox.getWidth(), this.contentBox.getY(),
                 new Color(1F, 0.5F, 0F, 0.85F).getRGBAColor());
 
@@ -135,7 +119,7 @@ public class UIElement extends GuiComponent implements GuiEventListener {
 
         GuiComponent.fill(new PoseStack(), this.contentBox.getX(), this.contentBox.getY() + this.contentBox.getHeight(),
                 this.contentBox.getX() + this.contentBox.getWidth(), this.contentBox.getY() + this.contentBox.getHeight() + margin[2],
-                new Color(1F, 0.5F, 0F, 0.85F).getRGBAColor());
+                new Color(1F, 0.5F, 0F, 0.85F).getRGBAColor());*/
 
 
         for (UIElement child : this.getChildren()) {
