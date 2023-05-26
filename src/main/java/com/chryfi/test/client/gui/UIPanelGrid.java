@@ -2,43 +2,42 @@ package com.chryfi.test.client.gui;
 
 import com.chryfi.test.utils.Color;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.gui.GuiComponent;
 import org.joml.Vector2i;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GuiPanelGrid extends GuiElement {
+public class UIPanelGrid extends UIElement {
     @Nullable
-    private GuiPanel panel;
+    private UIPanel panel;
     public DIRECTION direction;
-    private final List<GuiPanelGrid> grids = new ArrayList<>();
+    private final List<UIPanelGrid> grids = new ArrayList<>();
 
-    public GuiPanelGrid() {
+    public UIPanelGrid() {
         this(null, DIRECTION.HORIZONTAL);
     }
 
-    public GuiPanelGrid(GuiPanel panel, DIRECTION direction) {
-        super(true, true, true, true, true);
+    public UIPanelGrid(UIPanel panel, DIRECTION direction) {
+        //super(true, true, true, true, true);
 
         this.direction = direction;
         this.panel = panel;
     }
 
-    public void setPanel(GuiPanel panel) {
+    public void setPanel(UIPanel panel) {
         this.panel = panel;
         this.grids.clear();
     }
 
     @Override
-    public void addChildren(GuiElement... elements) {
+    public void addChildren(UIElement... elements) {
         for (int i = 0; i < elements.length; i++) {
-            if (!(elements[i] instanceof GuiPanelGrid)) {
+            if (!(elements[i] instanceof UIPanelGrid)) {
                 continue;
             }
 
-            GuiPanelGrid element = (GuiPanelGrid) elements[i];
+            UIPanelGrid element = (UIPanelGrid) elements[i];
 
             if (this.grids.size() == 0) {
                 this.direction = element.direction;
@@ -53,7 +52,7 @@ public class GuiPanelGrid extends GuiElement {
     }
 
     public void render(GuiContext context) {
-        Vector2i scale = this.calculateGlobalScale(context);
+        /*Vector2i scale = this.calculateGlobalScale(context);
         Vector2i pos = this.calculateGlobalPos(context);
         Vector2i posEnd = new Vector2i(pos).add(scale);
 
@@ -87,7 +86,7 @@ public class GuiPanelGrid extends GuiElement {
             this.grids.get(i).render(context);
         }
 
-        context.popCoordinates();
+        context.popCoordinates();*/
     }
 
     public enum DIRECTION {

@@ -6,6 +6,10 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 
 public class GLUtils {
+
+    /**
+     * @return array of {width, height}
+     */
     public static int[] getGLFWWindowSize() {
         int[] width = new int[1];
         int[] height = new int[1];

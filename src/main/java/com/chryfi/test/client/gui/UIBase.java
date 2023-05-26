@@ -6,42 +6,69 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import org.checkerframework.checker.guieffect.qual.UI;
 import org.joml.Matrix4f;
 
 import static org.lwjgl.opengl.GL30.GL_FRAMEBUFFER;
 
 @OnlyIn(Dist.CLIENT)
-public class GuiBase extends Screen {
-    private GuiElement root;
+public class UIBase extends Screen {
+    private UIElement root;
 
-    public GuiBase(Minecraft minecraft) {
+    public UIBase(Minecraft minecraft) {
         super(GameNarrator.NO_TITLE);
         this.minecraft = minecraft;
     }
 
+    /**
+     * This gets also called when resizing,
+     * see {@link Screen#resize(Minecraft, int, int)} and {@link Screen#rebuildWidgets()}
+     */
     @Override
     protected void init() {
-        this.root = new GuiPanelGrid();
-        this.root.w = 1F;
-        this.root.h = 1F;
+        this.root = new UIElement();
 
-        GuiPanelGrid test1 = new GuiPanelGrid();
-        test1.h = 0.5F;
-        test1.w = 1F;
-        test1.y = 0.5F;
-        test1.setPanel(new GuiPanel());
+        UIPropertyBuilder.setup(this.root)
+                .height(GLUtils.getGLFWWindowSize()[1])
+                .width(GLUtils.getGLFWWindowSize()[0])
+                .backgroundColor(1,1,1);
 
-        GuiPanelGrid test2 = new GuiPanelGrid();
-        test2.h = 1 - test1.h;
-        test2.w = 1F;
-        test2.setPanel(new GuiPanel());
+        UIElement centeredExample = new UIElement();
+        UIPropertyBuilder.setup(centeredExample)
+                .width(0.5F)
+                .height(0.5F)
+                .marginBottom(100)
+                .marginTop(50)
+                .marginLeft(0.25F);
 
-        this.root.addChildren(test1, test2);
+        UIElement test2 = new UIElement();
+        UIPropertyBuilder.setup(test2)
+                .width(200)
+                .height(0.5F)
+                .marginLeft(20)
+                .marginTop(20);
+
+        UIElement test3 = new UIElement();
+        UIPropertyBuilder.setup(test3)
+                .width(300)
+                .height(0.5F)
+                .marginLeft(50)
+                .marginTop(40);
+
+        UIElement test4 = new UIElement();
+        UIPropertyBuilder.setup(test4)
+                .width(300)
+                .height(0.5F)
+                .marginLeft(50)
+                .marginTop(40);
+
+        this.root.addChildren(centeredExample, test2, test3, test4);
+
+        this.root.resize();
     }
 
     @Override
@@ -51,8 +78,8 @@ public class GuiBase extends Screen {
 
     @Override
     public void render(PoseStack stack, int mouseX, int mouseY, float partialTicks) {
-        int windowWidth = Minecraft.getInstance().getWindow().getScreenWidth();
-        int windowHeight = Minecraft.getInstance().getWindow().getScreenHeight();
+        int windowWidth = GLUtils.getGLFWWindowSize()[0];
+        int windowHeight = GLUtils.getGLFWWindowSize()[1];
 
         int oldFramebufferID = GLUtils.getCurrentFramebufferID();
         GlStateManager._glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -70,11 +97,8 @@ public class GuiBase extends Screen {
         stack.translate(0, 0, 1000F);
 
         GuiContext context = new GuiContext(mouseX, mouseY, partialTicks);
-        context.pushCoordinates(0,0, windowWidth, windowHeight);
 
         this.root.render(context);
-
-        context.popCoordinates();
 
         stack.popPose();
 

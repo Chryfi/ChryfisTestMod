@@ -16,9 +16,6 @@ import java.util.Stack;
 public class GuiContext {
     public int mouseX;
     public int mouseY;
-
-    private Stack<Vector2i> posStack = new Stack<>();
-    private Stack<Vector2i> scaleStack = new Stack<>();
     public float partialTicks;
 
     public GuiContext(int mouseX, int mouseY, float partialTicks) {
@@ -30,39 +27,5 @@ public class GuiContext {
     public void setMouse(int mouseX, int mouseY) {
         this.mouseX = mouseX;
         this.mouseY = mouseY;
-    }
-
-    public void pushCoordinates(int posX, int posY, int width, int height) {
-        this.pushPos(posX, posY);
-        this.pushScale(width, height);
-    }
-
-    public void popCoordinates() {
-        this.popPos();
-        this.popScale();
-    }
-
-    private void pushPos(int posX, int posY) {
-        this.posStack.push(new Vector2i(posX, posY));
-    }
-
-    public Vector2i getPos() {
-        return new Vector2i(this.posStack.peek());
-    }
-
-    private void popPos() {
-        this.posStack.pop();
-    }
-
-    private void pushScale(int width, int height) {
-        this.scaleStack.push(new Vector2i(width, height));
-    }
-
-    public Vector2i getScale() {
-        return new Vector2i(this.scaleStack.peek());
-    }
-
-    private void popScale() {
-        this.scaleStack.pop();
     }
 }
