@@ -1,5 +1,7 @@
 package com.chryfi.test.client.gui;
 
+import org.joml.Math;
+
 public class Area {
     private int x;
     private int y;
@@ -11,10 +13,10 @@ public class Area {
     }
 
     public Area(int x, int y, int width, int height) {
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
+        this.setX(x);
+        this.setY(y);
+        this.setWidth(width);
+        this.setHeight(height);
     }
 
     public int getX() {
@@ -22,23 +24,23 @@ public class Area {
     }
 
     public void setX(int x) {
-        this.x = x;
+        this.x = Math.clamp(0, Integer.MAX_VALUE, x);
     }
 
     public void addX(int x) {
-        this.x += x;
+        this.x = Math.clamp(0, Integer.MAX_VALUE, this.x + x);
     }
 
     public int getY() {
-        return this.y;
+        return Math.clamp(0, Integer.MAX_VALUE, this.y);
     }
 
     public void setY(int y) {
-        this.y = y;
+        this.y = Math.clamp(0, Integer.MAX_VALUE, y);
     }
 
     public void addY(int y) {
-        this.y += y;
+        this.y = Math.clamp(0, Integer.MAX_VALUE, this.y + y);
     }
 
     public int getWidth() {
@@ -46,7 +48,7 @@ public class Area {
     }
 
     public void setWidth(int width) {
-        this.width = width;
+        this.width = Math.clamp(0, Integer.MAX_VALUE, width);
     }
 
     public int getHeight() {
@@ -54,7 +56,7 @@ public class Area {
     }
 
     public void setHeight(int height) {
-        this.height = height;
+        this.height = Math.clamp(0, Integer.MAX_VALUE, height);
     }
 
     public boolean isInside(int x, int y) {
