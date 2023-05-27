@@ -32,17 +32,23 @@ public class UIScreen extends Screen {
                 .width(GLUtils.getGLFWWindowSize()[0])
                 .backgroundColor(0.0F,0.0F,0.0F, 0.0F);
 
+        UIViewport viewport = new UIViewport();
+
 
         UIElement row1 = TestStuff.createTestRow(new UIElement(), new UIElement(), new UIElement(), new UIElement());
-        UIPropertyBuilder.setup(row1).width(0.51F);
-        UIElement row2 = TestStuff.createTestRow(new UIElement(), new UIElement(), new UIElement());
-        UIPropertyBuilder.setup(row2).width(0.51F);
+        UIPropertyBuilder.setup(row1).width(0.5F);
+        UIElement row2 = TestStuff.createTestRow(new UIElement(), viewport, new UIElement());
+        UIPropertyBuilder.setup(row2).width(1F).height(0.25F);
         UIElement row3 = TestStuff.createTestRow(new UIElement(), new UIElement(), new UIElement());
-        UIPropertyBuilder.setup(row3).width(0.51F);
-        UIElement row4 = TestStuff.createTestRow(new UIElement(), new UIElement(), new UIViewport());
+        UIPropertyBuilder.setup(row3).width(0.5F);
+        UIElement row4 = TestStuff.createTestRow(new UIElement(), new UIElement(), new UIElement());
         UIPropertyBuilder.setup(row4).width(1F).paddingLeft(0.5F);
+        UIElement row5 = TestStuff.createTestRow(new UIElement(), new UIElement(), new UIElement(), new UIElement(), new UIElement());
+        UIPropertyBuilder.setup(row5).width(1F).height(0.1F);
 
-        this.root.addChildren(row1, row2, row3, row4);
+        this.root.addChildren(row1, row2, row3, row4, row5);
+
+        viewport.addChildren(row5);
     }
 
     /**
