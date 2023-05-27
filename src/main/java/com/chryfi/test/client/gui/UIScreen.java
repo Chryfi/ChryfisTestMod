@@ -1,5 +1,6 @@
 package com.chryfi.test.client.gui;
 
+import com.chryfi.test.client.rendering.WindowHandler;
 import com.chryfi.test.utils.rendering.GLUtils;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -10,27 +11,41 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import org.checkerframework.checker.guieffect.qual.UI;
 import org.joml.Matrix4f;
 
 import static org.lwjgl.opengl.GL30.GL_FRAMEBUFFER;
 
 @OnlyIn(Dist.CLIENT)
-public class UIBase extends Screen {
+public class UIScreen extends Screen {
     private UIElement root;
+    public static boolean debug;
 
-    public UIBase(Minecraft minecraft) {
+    public UIScreen(Minecraft minecraft) {
         super(GameNarrator.NO_TITLE);
         this.minecraft = minecraft;
 
-        this.root = new UIElement();
+        this.root = new UIViewport();
 
         UIPropertyBuilder.setup(this.root)
-                .height(GLUtils.getGLFWWindowSize()[1])
-                .width(GLUtils.getGLFWWindowSize()[0])
-                .marginTop(50)
-                .backgroundColor(0.5F,0.5F,0.5F);
+                .height(Math.round(GLUtils.getGLFWWindowSize()[1] * 1F))
+                .width(Math.round(GLUtils.getGLFWWindowSize()[0] * 0.5F))
+                .backgroundColor(0.0F,0.0F,0.0F, 0.0F);
 
+
+
+        UIElement row1 = createTestRow(new UIElement(), new UIElement(), new UIElement(), new UIElement());
+        UIPropertyBuilder.setup(row1).width(0.51F);
+        UIElement row2 = createTestRow(new UIElement(), new UIElement(), new UIElement());
+        UIPropertyBuilder.setup(row2).width(0.51F);
+        UIElement row3 = createTestRow(new UIElement(), new UIElement(), new UIElement());
+        UIPropertyBuilder.setup(row3).width(0.51F);
+        UIElement row4 = createTestRow(new UIElement(), new UIElement(), new UIElement());
+        UIPropertyBuilder.setup(row4).width(1F).paddingLeft(0.5F);
+
+        this.root.addChildren(row1, row2, row3, row4);
+    }
+
+    private void bigChungusTest() {
         UIElement test1 = new UIElement();
         UIPropertyBuilder.setup(test1)
                 .width(0.35F)
@@ -79,58 +94,23 @@ public class UIBase extends Screen {
                 .width(700)
                 .height(0.35F)
                 .marginLeft(50)
-                .marginTop(40);
+                .marginTop(40)
+                .paddingLeft(100)
+                .paddingRight(100);
 
         UIElement test8 = new UIElement();
         UIPropertyBuilder.setup(test8)
                 .width(700)
                 .height(0.1F);
 
+        UIElement test9 = new UIElement();
+        UIPropertyBuilder.setup(test9)
+                .width(600)
+                .height(0.1F);
+
+        test7.addChildren(test9);
+
         this.root.addChildren(test1, test2, test3, test4, test5, test6, test7, test8);
-
-
-        /*UIElement column = new UIElement();
-        UIPropertyBuilder.setup(column)
-                .width(0.2F)
-                .height(0.5F)
-                .marginLeft(30)
-                .backgroundColor(0,0,0,0);
-
-        UIElement row1 = createTestRow();
-
-        UIElement column2 = new UIElement();
-        UIPropertyBuilder.setup(column2)
-                .width(0.5F)
-                .height(1F);
-
-        UIElement column3 = new UIElement();
-        UIPropertyBuilder.setup(column3)
-                .width(0.5F)
-                .height(1F);
-        UIElement row2 = createTestRow();
-        UIPropertyBuilder.setup(row2)
-                .width(0.75F)
-                .height(0.75F)
-                .anchorY(0.5F)
-                .y(0.5F)
-                .anchorX(0.5F)
-                .x(0.5F)
-                .marginTop(0);
-
-        UIElement row3 = createTestRow();
-        UIPropertyBuilder.setup(row3)
-                .width(0.5F)
-                .anchorX(0.5F)
-                .x(0.5F)
-                .marginTop(0);
-        column2.addChildren(row2);
-        column3.addChildren(row3);
-
-        row1.addChildren(column2, column3);
-
-        column.addChildren(row1);
-
-        this.root.addChildren(createTestFilledColumn(), createTestFilledColumn(), column);*/
     }
 
     /**
@@ -140,31 +120,45 @@ public class UIBase extends Screen {
     @Override
     protected void init() {
         UIPropertyBuilder.setup(this.root)
-                .height(GLUtils.getGLFWWindowSize()[1])
-                .width(GLUtils.getGLFWWindowSize()[0]);
+                .height(Math.round(GLUtils.getGLFWWindowSize()[1] * 1F))
+                .width(Math.round(GLUtils.getGLFWWindowSize()[0] * 0.5F));
 
         this.root.resize();
     }
 
-    private UIElement createTestRow() {
+    @Override
+    public void onClose() {
+        super.onClose();
+    }
+
+    private UIElement createTestRow(UIElement... elements) {
         UIElement row = new UIElement();
         UIPropertyBuilder.setup(row)
                 .width(1F)
                 .height(64)
-                .marginTop(10);
+                .marginTop(10)
+                .backgroundColor(0,0,0,0);
+
+        float w = 1F / elements.length;
+        for (UIElement element : elements) {
+            UIPropertyBuilder.setup(element).height(1F);
+
+            UIElement colContainer = this.createTestContainerColumn(w);
+            colContainer.addChildren(element);
+            row.addChildren(colContainer);
+        }
 
         return row;
     }
 
-    private UIElement createTestFilledColumn() {
+    private UIElement createTestContainerColumn(float width) {
         UIElement column = new UIElement();
         UIPropertyBuilder.setup(column)
-                .width(0.3F)
+                .width(width)
                 .height(1F)
-                .marginLeft(30)
+                .paddingLeft(16)
+                .paddingRight(16)
                 .backgroundColor(0,0,0,0);
-
-        column.addChildren(createTestRow(), createTestRow(), createTestRow(), createTestRow(), createTestRow());
 
         return column;
     }
@@ -176,7 +170,7 @@ public class UIBase extends Screen {
 
     @Override
     public void render(PoseStack stack, int mouseX, int mouseY, float partialTicks) {
-        int windowWidth = GLUtils.getGLFWWindowSize()[0];
+        /*int windowWidth = GLUtils.getGLFWWindowSize()[0];
         int windowHeight = GLUtils.getGLFWWindowSize()[1];
 
         int oldFramebufferID = GLUtils.getCurrentFramebufferID();
@@ -190,9 +184,9 @@ public class UIBase extends Screen {
         RenderSystem.setProjectionMatrix(matrix4f);
 
         RenderSystem.enableDepthTest();
-        stack.pushPose();
+        stack.pushPose();*/
         /* ensure GUI is rendered on top of Minecraft, as Minecraft viewport will be rendered later */
-        stack.translate(0, 0, 1000F);
+        /*stack.translate(0, 0, 1000F);
 
         GuiContext context = new GuiContext(mouseX, mouseY, partialTicks);
 
@@ -201,7 +195,7 @@ public class UIBase extends Screen {
         stack.popPose();
 
         RenderSystem.restoreProjectionMatrix();
-        GlStateManager._glBindFramebuffer(GL_FRAMEBUFFER, oldFramebufferID);
+        GlStateManager._glBindFramebuffer(GL_FRAMEBUFFER, oldFramebufferID);*/
     }
 
     @Override

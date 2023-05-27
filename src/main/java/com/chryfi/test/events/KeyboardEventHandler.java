@@ -1,6 +1,6 @@
 package com.chryfi.test.events;
 
-import com.chryfi.test.client.gui.UIBase;
+import com.chryfi.test.client.gui.UIScreen;
 import com.mojang.blaze3d.platform.*;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.event.InputEvent;
@@ -12,7 +12,7 @@ import static org.lwjgl.glfw.GLFW.*;
 
 @Mod.EventBusSubscriber
 public class KeyboardEventHandler {
-    private static UIBase screenTest = new UIBase(Minecraft.getInstance());
+    private static UIScreen screenTest = new UIScreen(Minecraft.getInstance());
 
     @SubscribeEvent
     public static void onKeyPress(InputEvent.Key event) {
@@ -24,7 +24,7 @@ public class KeyboardEventHandler {
                 Minecraft.getInstance().setScreen(screenTest);
                 break;
             case GLFW.GLFW_KEY_1:
-                screenTest = new UIBase(Minecraft.getInstance());
+                screenTest = new UIScreen(Minecraft.getInstance());
                 Minecraft.getInstance().setScreen(screenTest);
                 break;
             case GLFW.GLFW_KEY_2:

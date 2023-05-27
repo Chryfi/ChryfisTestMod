@@ -1,9 +1,5 @@
 package com.chryfi.test.client.gui;
 
-import org.checkerframework.checker.units.qual.A;
-
-import javax.print.Doc;
-
 public class UITransformation {
     private Unit x = new Unit(0);
     private Unit y = new Unit(0);
@@ -118,6 +114,7 @@ public class UITransformation {
         this.target.resetAreas();
 
         this.apply(row);
+        this.target.onAreasCalculated();
 
         DocumentFlowRow flowRow = new DocumentFlowRow();
         for (UIElement element : this.target.getChildren()) {
@@ -133,7 +130,7 @@ public class UITransformation {
     }
 
     /**
-     * Calculates stuff, very important. Traverse the UI tree and call this method.
+     * Calculates the areas for this target element. Traverse the UI tree and call this method.
      * @param row
      */
     private void apply(DocumentFlowRow row) {
@@ -256,7 +253,12 @@ public class UITransformation {
      */
     protected int calculatePixels(int relative, Unit unit) {
         if (unit.getType() == Unit.TYPE.PERCENTAGE) {
-            return Math.round(relative * unit.getValue());
+            /*
+             * Math.round can cause issues sometimes where with "perfect" percentages,
+             * e.g. 4 * 25% width elements might not always fit in one row
+             * TODO floor fixes this but could in theory lead to 1 pixel inconsistencies
+             */
+            return (int) Math.floor(relative * unit.getValue());
         } else {
             return (int) unit.getValue();
         }
@@ -264,12 +266,9 @@ public class UITransformation {
 
 
     public enum POSITION {
-        /**
-         * Relative to the parent
-         */
         RELATIVE,
         /**
-         * Global position
+         * Relative to its own position, but does not contribute to the document flow.
          */
         ABSOLUTE
     }

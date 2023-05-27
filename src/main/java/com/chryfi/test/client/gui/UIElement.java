@@ -6,7 +6,6 @@ import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import org.checkerframework.checker.units.qual.A;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,6 +47,8 @@ public class UIElement extends GuiComponent implements GuiEventListener {
         this.background = new Color((float)Math.random(),
                 (float)Math.random(),
                 (float)Math.random());
+
+        UIPropertyBuilder.setup(this).width(1F);
     }
 
     /*
@@ -128,10 +129,18 @@ public class UIElement extends GuiComponent implements GuiEventListener {
         this.getTransformation().resize();
     }
 
+    /**
+     * This is called after resizing this element
+     * and finishing the calculation of the areas.
+     */
+    public void onAreasCalculated() { }
+
     public void render(GuiContext context) {
-        GuiComponent.fill(new PoseStack(), this.flowArea.getX(), this.flowArea.getY(),
-                this.flowArea.getX() + this.flowArea.getWidth(), this.flowArea.getY() + this.flowArea.getHeight(),
-                new Color(0F, 0.25F, 1F, 0.25F).getRGBAColor());
+        if (UIScreen.debug) {
+            GuiComponent.fill(new PoseStack(), this.flowArea.getX(), this.flowArea.getY(),
+                    this.flowArea.getX() + this.flowArea.getWidth(), this.flowArea.getY() + this.flowArea.getHeight(),
+                    new Color(0F, 0.25F, 1F, 0.25F).getRGBAColor());
+        }
 
         if (this.background != null) {
             GuiComponent.fill(new PoseStack(), this.contentBox.getX(), this.contentBox.getY(),
@@ -139,8 +148,10 @@ public class UIElement extends GuiComponent implements GuiEventListener {
                     this.background.getRGBAColor());
         }
 
-        this.drawMargins();
-        this.drawPaddings();
+        if (UIScreen.debug) {
+            this.drawMargins();
+            this.drawPaddings();
+        }
 
         for (UIElement child : this.getChildren()) {
             child.render(context);
