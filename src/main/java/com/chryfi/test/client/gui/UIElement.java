@@ -12,6 +12,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * When overriding internal children storage behaviour, you need to override following methods:
+ * {@link #getChildren()}, {@link #addChildren(UIElement...)} and {@link #removeChild(UIElement)}.
+ */
 @OnlyIn(Dist.CLIENT)
 public class UIElement extends GuiComponent implements GuiEventListener {
     /**
@@ -70,12 +74,18 @@ public class UIElement extends GuiComponent implements GuiEventListener {
 
     public void addChildren(UIElement... elements) {
         for (UIElement element : elements) {
+            element.remove();
             element.parent = this;
         }
 
         this.children.addAll(Arrays.asList(elements));
     }
 
+    /**
+     * @return a list of the children of this element. Changes to this list will NOT be reflected in the internal list.
+     *          See methods that modify the child/parent relationship
+     *          like {@link #remove()} or {@link #removeChild()} for alternatives
+     */
     public List<UIElement> getChildren() {
         return new ArrayList<>(this.children);
     }
@@ -108,15 +118,20 @@ public class UIElement extends GuiComponent implements GuiEventListener {
     public Area getInnerArea() {
         return this.innerArea;
     }
-    
+
     /**
      * Removes this element from the parent.
      */
     public void remove() {
         if (this.parent != null) {
-            this.parent.getChildren().remove(this);
+            this.parent.removeChild(this);
             this.parent = null;
         }
+    }
+
+    public void removeChild(UIElement child) {
+        this.children.remove(child);
+        child.parent = null;
     }
 
     /**
