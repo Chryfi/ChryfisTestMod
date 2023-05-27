@@ -107,7 +107,7 @@ public class UITransformation {
     }
 
     /**
-     * Recursive method for resizing
+     * Recursive method for resizing traversing the tree.
      * @param row
      */
     private void resize(DocumentFlowRow row) {
@@ -136,7 +136,7 @@ public class UITransformation {
      * Calculates stuff, very important. Traverse the UI tree and call this method.
      * @param row
      */
-    public void apply(DocumentFlowRow row) {
+    private void apply(DocumentFlowRow row) {
         final Area parentInnerArea;
 
         if (this.target.getParent().isPresent()) {
@@ -153,11 +153,11 @@ public class UITransformation {
         this.target.getContentArea().setWidth(this.calculatePixels(parentInnerArea.getWidth(), this.width));
         this.target.getContentArea().setHeight(this.calculatePixels(parentInnerArea.getHeight(), this.height));
 
-        int[] margins = this.calculateMargins(this.target);
-        this.target.margin = margins;
+        int[] margin = this.calculateMargins(this.target);
+        this.target.margin = margin;
 
-        this.target.getFlowArea().setHeight(margins[0] + margins[2] + this.target.getContentArea().getHeight());
-        this.target.getFlowArea().setWidth(margins[3] + margins[1] + this.target.getContentArea().getWidth());
+        this.target.getFlowArea().setHeight(margin[0] + margin[2] + this.target.getContentArea().getHeight());
+        this.target.getFlowArea().setWidth(margin[3] + margin[1] + this.target.getContentArea().getWidth());
 
         root.setX(parentInnerArea.getX());
         root.setY(parentInnerArea.getY());
@@ -168,22 +168,7 @@ public class UITransformation {
         int y = this.calculatePixels(parentInnerArea.getHeight(), this.y) - anchorY;
 
         if (this.position == POSITION.RELATIVE) {
-            /*
-             * This code is responsible for document flow. Check if this element fit's
-             * in the gap between last element and the parent's border.
-             */
-            if (row.getLast().isPresent()) {
-                int occupiedWidth = row.getWidth();//lastFlowArea.getX() - parentContentArea.getX() + lastFlowArea.getWidth();
-
-                if (parentInnerArea.getWidth() - occupiedWidth >= this.target.getFlowArea().getWidth()) {
-                    root.addX(occupiedWidth);
-                    root.setY(row.getY());
-                } else {
-                    /* element doesn't fit -> breaks into new row */
-                    root.setY(row.getY() + row.getMaxHeight());
-                    row.reset();
-                }
-            }
+            this.calculateDocumentFlow(row, this.target, root);
 
             /* offset the position */
             contentNode.addX(x);
@@ -197,14 +182,47 @@ public class UITransformation {
             contentNode.addY(y);
         }
 
-        contentNode.addX(margins[3]);
-        contentNode.addY(margins[0]);
+        contentNode.addX(margin[3]);
+        contentNode.addY(margin[0]);
 
-        int[] paddings = this.calculatePaddings(this.target);
-        this.target.getInnerArea().setWidth(this.target.getContentArea().getWidth() - paddings[1] - paddings[3]);
-        this.target.getInnerArea().setHeight(this.target.getContentArea().getHeight() - paddings[0] - paddings[2]);
-        innerNode.addX(paddings[3]);
-        innerNode.addY(paddings[0]);
+        int[] padding = this.calculatePaddings(this.target);
+        this.target.padding = padding;
+        this.target.getInnerArea().setWidth(this.target.getContentArea().getWidth() - padding[1] - padding[3]);
+        this.target.getInnerArea().setHeight(this.target.getContentArea().getHeight() - padding[0] - padding[2]);
+        innerNode.addX(padding[3]);
+        innerNode.addY(padding[0]);
+    }
+
+    /**
+     * Calculates the document flow of the given root area.
+     * This method modifies the positions of the areas in the given chain.
+     *
+     * If it fits besides the previous elements in the given row, it will be placed in the row, if not, the row will end,
+     * and it will flow into a new row.
+     * @param row
+     * @param root the area flow node of the element to place in the document.
+     */
+    protected void calculateDocumentFlow(DocumentFlowRow row, UIElement target, DocumentFlowRow.AreaNode root) {
+        final Area parentInnerArea;
+
+        if (target.getParent().isPresent()) {
+            parentInnerArea = target.getParent().get().getInnerArea();
+        } else {
+            parentInnerArea = new Area(0,0,0,0);
+        }
+
+        if (row.getLast().isPresent()) {
+            int occupiedWidth = row.getWidth();//lastFlowArea.getX() - parentContentArea.getX() + lastFlowArea.getWidth();
+
+            if (parentInnerArea.getWidth() - occupiedWidth >= target.getFlowArea().getWidth()) {
+                root.addX(occupiedWidth);
+                root.setY(row.getY());
+            } else {
+                /* element doesn't fit -> breaks into new row */
+                root.setY(row.getY() + row.getMaxHeight());
+                row.reset();
+            }
+        }
     }
 
     /**
