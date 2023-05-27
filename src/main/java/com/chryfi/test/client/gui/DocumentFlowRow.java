@@ -60,15 +60,15 @@ public class DocumentFlowRow {
      * @param element
      */
     public void addElement(UIElement element) {
-        AreaNode node = new AreaNode(element.flowArea);
-        node.appendChild(element.contentBox);
+        AreaNode node = new AreaNode(element.getFlowArea());
+        node.appendChild(element.getContentArea());
 
         if (!this.areas.isEmpty()) {
             /*
              * Nothing needs to be done when the height is equal, as then all the previous elements
              * are already in the correct positions.
              */
-            if (element.flowArea.getHeight() < this.maxHeight) {
+            if (element.getFlowArea().getHeight() < this.maxHeight) {
                 node.addY(this.maxHeight - element.getFlowArea().getHeight());
             } else if (element.getFlowArea().getHeight() > this.maxHeight) {
                 this.recalculateRow(node);
