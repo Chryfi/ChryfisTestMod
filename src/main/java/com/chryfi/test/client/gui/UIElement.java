@@ -23,7 +23,7 @@ public class UIElement extends GuiComponent implements GuiEventListener {
 
 
     /**
-     * The entire area occupied by this UIElement. This includes the content box and margins.
+     * The entire area occupied by this UIElement. This includes the content area and margins.
      * This is used for document flow.
      */
     protected final Area flowArea = new Area();
@@ -31,13 +31,12 @@ public class UIElement extends GuiComponent implements GuiEventListener {
      * The area that the background and border render in.
      * With relative positioning, this area can be outside the document flow area {@link #flowArea}
      */
-    protected final Area contentBox = new Area();
+    protected final Area contentArea = new Area();
     /**
      * This is the area that is inside the contentArea and affected by padding.
-     * This is where the content/children render in
+     * This is where the content/children render in.
      */
     protected final Area innerArea = new Area();
-
     private UITransformation transformation = new UITransformation(this);
     protected Color background;
     private final List<UIElement> children = new ArrayList<>();
@@ -94,7 +93,7 @@ public class UIElement extends GuiComponent implements GuiEventListener {
 
     public void resetAreas() {
         this.flowArea.reset();
-        this.contentBox.reset();
+        this.contentArea.reset();
         this.innerArea.reset();
     }
 
@@ -103,14 +102,13 @@ public class UIElement extends GuiComponent implements GuiEventListener {
     }
 
     public Area getContentArea() {
-        return this.contentBox;
+        return this.contentArea;
     }
 
     public Area getInnerArea() {
         return this.innerArea;
     }
-
-
+    
     /**
      * Removes this element from the parent.
      */
@@ -135,6 +133,22 @@ public class UIElement extends GuiComponent implements GuiEventListener {
      */
     public void onAreasCalculated() { }
 
+    /**
+     * This gets called when the UIElement is closed.
+     */
+    public void onClose() {
+        this._onClose();
+
+        for (UIElement element : this.getChildren()) {
+            element.onClose();
+        }
+    }
+
+    /**
+     * This method is supposed to be overridden to define logic to happen when the UI is closed.
+     */
+    protected void _onClose() { }
+
     public void render(GuiContext context) {
         if (UIScreen.debug) {
             GuiComponent.fill(new PoseStack(), this.flowArea.getX(), this.flowArea.getY(),
@@ -143,8 +157,8 @@ public class UIElement extends GuiComponent implements GuiEventListener {
         }
 
         if (this.background != null) {
-            GuiComponent.fill(new PoseStack(), this.contentBox.getX(), this.contentBox.getY(),
-                    this.contentBox.getX() + this.contentBox.getWidth(), this.contentBox.getY() + this.contentBox.getHeight(),
+            GuiComponent.fill(new PoseStack(), this.contentArea.getX(), this.contentArea.getY(),
+                    this.contentArea.getX() + this.contentArea.getWidth(), this.contentArea.getY() + this.contentArea.getHeight(),
                     this.background.getRGBAColor());
         }
 
@@ -159,29 +173,29 @@ public class UIElement extends GuiComponent implements GuiEventListener {
     }
 
     private void drawMargins() {
-        GuiComponent.fill(new PoseStack(), this.contentBox.getX(), this.contentBox.getY() - this.margin[0],
-                this.contentBox.getX() + this.contentBox.getWidth(), this.contentBox.getY(),
+        GuiComponent.fill(new PoseStack(), this.contentArea.getX(), this.contentArea.getY() - this.margin[0],
+                this.contentArea.getX() + this.contentArea.getWidth(), this.contentArea.getY(),
                 new Color(1F, 0.5F, 0F, 0.5F).getRGBAColor());
 
-        GuiComponent.fill(new PoseStack(), this.contentBox.getX() - this.margin[3], this.contentBox.getY(),
-                this.contentBox.getX(), this.contentBox.getY() + this.contentBox.getHeight(),
+        GuiComponent.fill(new PoseStack(), this.contentArea.getX() - this.margin[3], this.contentArea.getY(),
+                this.contentArea.getX(), this.contentArea.getY() + this.contentArea.getHeight(),
                 new Color(1F, 0.5F, 0F, 0.5F).getRGBAColor());
 
-        GuiComponent.fill(new PoseStack(), this.contentBox.getX() + this.contentBox.getWidth(), this.contentBox.getY(),
-                this.contentBox.getX() + this.contentBox.getWidth() + this.margin[1], this.contentBox.getY() + this.contentBox.getHeight(),
+        GuiComponent.fill(new PoseStack(), this.contentArea.getX() + this.contentArea.getWidth(), this.contentArea.getY(),
+                this.contentArea.getX() + this.contentArea.getWidth() + this.margin[1], this.contentArea.getY() + this.contentArea.getHeight(),
                 new Color(1F, 0.5F, 0F, 0.5F).getRGBAColor());
 
-        GuiComponent.fill(new PoseStack(), this.contentBox.getX(), this.contentBox.getY() + this.contentBox.getHeight(),
-                this.contentBox.getX() + this.contentBox.getWidth(), this.contentBox.getY() + this.contentBox.getHeight() + margin[2],
+        GuiComponent.fill(new PoseStack(), this.contentArea.getX(), this.contentArea.getY() + this.contentArea.getHeight(),
+                this.contentArea.getX() + this.contentArea.getWidth(), this.contentArea.getY() + this.contentArea.getHeight() + margin[2],
                 new Color(1F, 0.5F, 0F, 0.5F).getRGBAColor());
     }
 
     private void drawPaddings() {
-        GuiComponent.fill(new PoseStack(), this.innerArea.getX(), this.contentBox.getY(),
-                this.innerArea.getX() + this.innerArea.getWidth(), this.contentBox.getY() + this.padding[0],
+        GuiComponent.fill(new PoseStack(), this.innerArea.getX(), this.contentArea.getY(),
+                this.innerArea.getX() + this.innerArea.getWidth(), this.contentArea.getY() + this.padding[0],
                 new Color(0F, 1F, 0F, 0.5F).getRGBAColor());
         /* left */
-        GuiComponent.fill(new PoseStack(), this.contentBox.getX(), this.innerArea.getY(),
+        GuiComponent.fill(new PoseStack(), this.contentArea.getX(), this.innerArea.getY(),
                 this.innerArea.getX(), this.innerArea.getY() + this.innerArea.getHeight(),
                 new Color(0F, 1F, 0F, 0.5F).getRGBAColor());
         /* right */
