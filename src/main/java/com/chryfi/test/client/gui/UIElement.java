@@ -6,6 +6,7 @@ import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import org.checkerframework.checker.units.qual.A;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,10 +29,15 @@ public class UIElement extends GuiComponent implements GuiEventListener {
      */
     protected final Area flowArea = new Area();
     /**
-     * The actual area that the content/children render in.
+     * The area that the background and border render in.
      * With relative positioning, this area can be outside the document flow area {@link #flowArea}
      */
     protected final Area contentBox = new Area();
+    /**
+     * This is the area that is inside the contentArea and affected by padding.
+     * This is where the content/children render in
+     */
+    protected final Area innerArea = new Area();
 
     private UITransformation transformation = new UITransformation(this);
     protected Color background;
@@ -88,6 +94,7 @@ public class UIElement extends GuiComponent implements GuiEventListener {
     public void resetAreas() {
         this.flowArea.reset();
         this.contentBox.reset();
+        this.innerArea.reset();
     }
 
     public Area getFlowArea() {
@@ -96,6 +103,10 @@ public class UIElement extends GuiComponent implements GuiEventListener {
 
     public Area getContentArea() {
         return this.contentBox;
+    }
+
+    public Area getInnerArea() {
+        return this.innerArea;
     }
 
 

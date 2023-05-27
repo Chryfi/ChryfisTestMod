@@ -1,5 +1,7 @@
 package com.chryfi.test.client.gui;
 
+import org.checkerframework.checker.units.qual.A;
+
 import javax.print.Doc;
 
 public class UITransformation {
@@ -135,36 +137,35 @@ public class UITransformation {
      * @param row
      */
     public void apply(DocumentFlowRow row) {
-        final Area parentContentArea, parentFlowArea;
+        final Area parentInnerArea;
 
         if (this.target.getParent().isPresent()) {
-            parentFlowArea = this.target.getParent().get().flowArea;
-            parentContentArea = this.target.getParent().get().contentBox;
+            parentInnerArea = this.target.getParent().get().getInnerArea();
         } else {
-            parentFlowArea = new Area(0,0,0,0);
-            parentContentArea = new Area(0,0,0,0);
+            parentInnerArea = new Area(0,0,0,0);
         }
 
         DocumentFlowRow.AreaNode root = new DocumentFlowRow.AreaNode(this.target.getFlowArea());
         DocumentFlowRow.AreaNode contentNode = root.appendChild(this.target.getContentArea());
+        DocumentFlowRow.AreaNode innerNode = root.appendChild(this.target.getInnerArea());
 
 
-        this.target.getContentArea().setWidth(this.calculatePixels(parentContentArea.getWidth(), this.width));
-        this.target.getContentArea().setHeight(this.calculatePixels(parentContentArea.getHeight(), this.height));
+        this.target.getContentArea().setWidth(this.calculatePixels(parentInnerArea.getWidth(), this.width));
+        this.target.getContentArea().setHeight(this.calculatePixels(parentInnerArea.getHeight(), this.height));
 
         int[] margins = this.calculateMargins(this.target);
         this.target.margin = margins;
 
-        this.target.getFlowArea().setHeight(margins[0] + margins[2] + this.target.contentBox.getHeight());
-        this.target.getFlowArea().setWidth(margins[3] + margins[1] + this.target.contentBox.getWidth());
+        this.target.getFlowArea().setHeight(margins[0] + margins[2] + this.target.getContentArea().getHeight());
+        this.target.getFlowArea().setWidth(margins[3] + margins[1] + this.target.getContentArea().getWidth());
 
-        root.setX(parentContentArea.getX());
-        root.setY(parentContentArea.getY());
+        root.setX(parentInnerArea.getX());
+        root.setY(parentInnerArea.getY());
 
         int anchorX = this.calculatePixels(this.target.getContentArea().getWidth(), this.anchorX);
         int anchorY = this.calculatePixels(this.target.getContentArea().getHeight(), this.anchorY);
-        int x = this.calculatePixels(parentContentArea.getWidth(), this.x) - anchorX;
-        int y = this.calculatePixels(parentContentArea.getHeight(), this.y) - anchorY;
+        int x = this.calculatePixels(parentInnerArea.getWidth(), this.x) - anchorX;
+        int y = this.calculatePixels(parentInnerArea.getHeight(), this.y) - anchorY;
 
         if (this.position == POSITION.RELATIVE) {
             /*
@@ -174,7 +175,7 @@ public class UITransformation {
             if (row.getLast().isPresent()) {
                 int occupiedWidth = row.getWidth();//lastFlowArea.getX() - parentContentArea.getX() + lastFlowArea.getWidth();
 
-                if (parentContentArea.getWidth() - occupiedWidth >= this.target.getFlowArea().getWidth()) {
+                if (parentInnerArea.getWidth() - occupiedWidth >= this.target.getFlowArea().getWidth()) {
                     root.addX(occupiedWidth);
                     root.setY(row.getY());
                 } else {
@@ -198,6 +199,12 @@ public class UITransformation {
 
         contentNode.addX(margins[3]);
         contentNode.addY(margins[0]);
+
+        int[] paddings = this.calculatePaddings(this.target);
+        this.target.getInnerArea().setWidth(this.target.getContentArea().getWidth() - paddings[1] - paddings[3]);
+        this.target.getInnerArea().setHeight(this.target.getContentArea().getHeight() - paddings[0] - paddings[2]);
+        innerNode.addX(paddings[3]);
+        innerNode.addY(paddings[0]);
     }
 
     /**
@@ -212,6 +219,15 @@ public class UITransformation {
         int marginRight = this.calculatePixels(target.getContentArea().getWidth(), target.getTransformation().getMarginRight());
 
         return new int[]{marginTop, marginRight, marginBottom, marginLeft};
+    }
+
+    protected int[] calculatePaddings(UIElement target) {
+        int paddingTop = this.calculatePixels(target.getContentArea().getHeight(), target.getTransformation().getPaddingTop());
+        int paddingBottom = this.calculatePixels(target.getContentArea().getHeight(), target.getTransformation().getPaddingBottom());
+        int paddingLeft = this.calculatePixels(target.getContentArea().getWidth(), target.getTransformation().getPaddingLeft());
+        int paddingRight = this.calculatePixels(target.getContentArea().getWidth(), target.getTransformation().getPaddingRight());
+
+        return new int[]{paddingTop, paddingRight, paddingBottom, paddingLeft};
     }
 
     /**
