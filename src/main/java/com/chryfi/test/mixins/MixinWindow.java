@@ -4,7 +4,11 @@ import com.chryfi.test.Test;
 import com.chryfi.test.client.rendering.IMixinWindow;
 import com.chryfi.test.client.rendering.WindowHandler;
 import com.mojang.blaze3d.platform.Window;
+import com.mojang.blaze3d.platform.WindowEventHandler;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -18,23 +22,80 @@ public abstract class MixinWindow implements IMixinWindow {
     private int framebufferHeight;
     @Shadow
     private long window;
+    @Shadow
+    private int width;
+    @Shadow
+    private int height;
+    @Shadow
+    private WindowEventHandler eventHandler;
 
-    @Inject(method = "onFramebufferResize(JII)V",
-            at = @At(value = "FIELD", target = "Lcom/mojang/blaze3d/platform/Window;framebufferHeight:I", shift = At.Shift.AFTER))
-    public void onFrameBufferResize(long p_85416_, int p_85417_, int p_85418_, CallbackInfo ci) {
-        this.framebufferWidth = WindowHandler.frameBufferResize(p_85417_, p_85418_)[0];
-        this.framebufferHeight = WindowHandler.frameBufferResize(p_85417_, p_85418_)[1];
+    /**
+     * @author
+     * @reason
+     */
+    @Overwrite
+    public void onFramebufferResize(long p_85416_, int p_85417_, int p_85418_) {
+        if (p_85416_ == this.window) {
+            int i = this.getWidth();
+            int j = this.getHeight();
+            if (p_85417_ != 0 && p_85418_ != 0) {
+                if (WindowHandler.overwrite) {
+                    this.framebufferWidth = WindowHandler.width;
+                    this.framebufferHeight = WindowHandler.height;
+
+                    this.eventHandler.resizeDisplay();
+                } else {
+                    this.framebufferWidth = p_85417_;
+                    this.framebufferHeight = p_85418_;
+                    if (this.getWidth() != i || this.getHeight() != j) {
+                        this.eventHandler.resizeDisplay();
+                    }
+                }
+            }
+        }
     }
 
     @Override
     public void resize(int width, int height) {
-        //this.onResize(this.window, width, height);
-        this.onFramebufferResize(this.window, width, height);
+        int w = this.framebufferWidth;
+        int h = this.framebufferHeight;
+        this.framebufferWidth = width;
+        this.framebufferHeight = height;
+        this.width = width;
+        this.height = width;
+
+        if (w != this.framebufferWidth || h != this.framebufferHeight) {
+            /* the screen shouldn't resize here, I think...
+            this is probably not good design and hacky workaround. */
+            Screen tmp = Minecraft.getInstance().screen;
+            Minecraft.getInstance().screen = null;
+            this.eventHandler.resizeDisplay();
+            Minecraft.getInstance().screen = tmp;
+        }
+    }
+
+    /**
+     * @author
+     * @reason
+     */
+    @Overwrite
+    private void onResize(long p_85428_, int p_85429_, int p_85430_) {
+        if (WindowHandler.overwrite) {
+            this.width = WindowHandler.width;
+            this.height = WindowHandler.width;
+        } else {
+            this.width = p_85429_;
+            this.height = p_85430_;
+        }
     }
 
     @Shadow
-    private void onFramebufferResize(long p_85416_, int p_85417_, int p_85418_) {}
+    public int getWidth() {
+        return this.framebufferWidth;
+    }
 
     @Shadow
-    private void onResize(long p_85428_, int p_85429_, int p_85430_) {}
+    public int getHeight() {
+        return this.framebufferHeight;
+    }
 }

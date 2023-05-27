@@ -27,19 +27,25 @@ import java.nio.ShortBuffer;
 import java.util.Optional;
 
 public class WindowHandler {
-    private static long tick = 0;
-    private static Vector2d pos = new Vector2d(1280 / 2,720 / 2);
-    private static Vector2d velocity = new Vector2d(0,0);
-    private static int width = 1280;
-    private static int height = 720;
+    public static int width = 1280;
+    public static int height = 720;
+    public static int x = 0;
+    public static int y = 0;
+    public static boolean resize = false;
+    public static boolean overwrite = false;
 
     /**
      * Call this after everything has been rendered
      * to accurately capture and manipulate the framebuffer's contents
      */
     public static void handleWindow() {
-        int windowWidth = Minecraft.getInstance().getWindow().getScreenWidth();
-        int windowHeight = Minecraft.getInstance().getWindow().getScreenHeight();
+        /**
+         * DEACTIVATED - currently testing in {@link com.chryfi.test.client.gui.UIViewport}
+         */
+        if (true) return;
+
+        int windowWidth = GLUtils.getGLFWWindowSize()[0];
+        int windowHeight = GLUtils.getGLFWWindowSize()[1];
 
         RenderSystem.viewport(0, 0, windowWidth, windowHeight);
 
@@ -59,70 +65,25 @@ public class WindowHandler {
         BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
         bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
 
-        int x0 = (int) Math.round(pos.x);
-        int y0 = (int) Math.round(pos.y);
+        width = width == 0 ? 1 : width;
+        height = height == 0 ? 1 : height;
 
-        buildUVQuad(bufferBuilder, x0, y0, x0 + width, y0 + height);
+        buildUVQuad(bufferBuilder, x, y, x + width, y + height);
 
         BufferUploader.drawWithShader(bufferBuilder.end());
 
-        /* resize after drawing, as resizing destroys the old framebuffers */
-        Object window = Minecraft.getInstance().getWindow();
-        ((IMixinWindow) window).resize(width, height);
+        if (WindowHandler.resize) {
+            Object window = Minecraft.getInstance().getWindow();
+            ((IMixinWindow) window).resize(width, height);
+            WindowHandler.resize = false;
+        }
 
         RenderSystem.disableDepthTest();
-
-        tick++;
     }
 
-    /**
-     * Update position, collision testing and resolve step.
-     */
-    public static void compute() {
-        int windowWidth = GLUtils.getGLFWWindowSize()[0];
-        int windowHeight = GLUtils.getGLFWWindowSize()[1];
-
-        if (pos == null) {
-            pos = new Vector2d();
-            pos.x = windowWidth/2D - width/2D;
-            pos.y = windowHeight/2D - height/2D;
-        }
-
-        if (velocity == null) {
-            velocity = new Vector2d(2, 2);
-        }
-
-        width = (int) Math.round(((((Math.sin(tick * 0.01) + 1) * (1 - 0.25)) / 2) + 0.25) * 854);
-        width = Math.clamp(0, (int) Math.round(windowWidth - pos.x), width);
-        height = (int) Math.round(((((Math.cos(tick * 0.01) + 1) * (1 - 0.25)) / 2) + 0.25) * 480);
-        height = Math.clamp(0, (int) Math.round(windowHeight - pos.y), height);
-
-        pos.x += velocity.x;
-        pos.y += velocity.y;
-
-        if (pos.x <= 0) {
-            pos.x = 0;
-            velocity.x *= -1;
-        }
-
-        if (pos.y <= 0) {
-            pos.y = 0;
-            velocity.y *= -1;
-        }
-
-        if (pos.y + height >= windowHeight) {
-            pos.y = windowHeight - height;
-            velocity.y *= -1;
-        }
-
-        if (pos.x + width >= windowWidth) {
-            pos.x = windowWidth - width;
-            velocity.x *= -1;
-        }
-    }
-
-    public static int[] frameBufferResize(int x, int y) {
-        return new int[]{x, y};
+    public static void revertToDefault() {
+        Object window = Minecraft.getInstance().getWindow();
+        ((IMixinWindow) window).resize(GLUtils.getGLFWWindowSize()[0], GLUtils.getGLFWWindowSize()[1]);
     }
 
     private static void buildUVQuad(BufferBuilder bufferBuilder, int x0, int y0, int x1, int y1) {
@@ -131,5 +92,4 @@ public class WindowHandler {
         bufferBuilder.vertex(x0, y1, -500).uv(0,0).endVertex();
         bufferBuilder.vertex(x1, y1, -500).uv(1,0).endVertex();
     }
-
 }
