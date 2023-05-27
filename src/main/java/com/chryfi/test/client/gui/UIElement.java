@@ -139,6 +139,15 @@ public class UIElement extends GuiComponent implements GuiEventListener {
                     this.background.getRGBAColor());
         }
 
+        this.drawMargins();
+        this.drawPaddings();
+
+        for (UIElement child : this.getChildren()) {
+            child.render(context);
+        }
+    }
+
+    private void drawMargins() {
         GuiComponent.fill(new PoseStack(), this.contentBox.getX(), this.contentBox.getY() - this.margin[0],
                 this.contentBox.getX() + this.contentBox.getWidth(), this.contentBox.getY(),
                 new Color(1F, 0.5F, 0F, 0.5F).getRGBAColor());
@@ -154,11 +163,26 @@ public class UIElement extends GuiComponent implements GuiEventListener {
         GuiComponent.fill(new PoseStack(), this.contentBox.getX(), this.contentBox.getY() + this.contentBox.getHeight(),
                 this.contentBox.getX() + this.contentBox.getWidth(), this.contentBox.getY() + this.contentBox.getHeight() + margin[2],
                 new Color(1F, 0.5F, 0F, 0.5F).getRGBAColor());
+    }
 
+    private void drawPaddings() {
+        GuiComponent.fill(new PoseStack(), this.innerArea.getX(), this.contentBox.getY(),
+                this.innerArea.getX() + this.innerArea.getWidth(), this.contentBox.getY() + this.padding[0],
+                new Color(0F, 1F, 0F, 0.5F).getRGBAColor());
+        /* left */
+        GuiComponent.fill(new PoseStack(), this.contentBox.getX(), this.innerArea.getY(),
+                this.innerArea.getX(), this.innerArea.getY() + this.innerArea.getHeight(),
+                new Color(0F, 1F, 0F, 0.5F).getRGBAColor());
+        /* right */
+        GuiComponent.fill(new PoseStack(), this.innerArea.getX() + this.innerArea.getWidth(), this.innerArea.getY(),
+                this.innerArea.getX() + this.innerArea.getWidth() + this.padding[1],
+                this.innerArea.getY() + this.innerArea.getHeight(),
+                new Color(0F, 1F, 0F, 0.5F).getRGBAColor());
 
-        for (UIElement child : this.getChildren()) {
-            child.render(context);
-        }
+        GuiComponent.fill(new PoseStack(), this.innerArea.getX(), this.innerArea.getY() + this.innerArea.getHeight(),
+                this.innerArea.getX() + this.innerArea.getWidth(),
+                this.innerArea.getY() + this.innerArea.getHeight() + this.padding[2],
+                new Color(0F, 1F, 0F, 0.5F).getRGBAColor());
     }
 
     @Override
