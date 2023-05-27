@@ -57,6 +57,10 @@ public class Area {
         this.height = height;
     }
 
+    public boolean isInside(int x, int y) {
+        return x >= this.x && x < this.x + this.width && y >= this.y && y < this.y + this.height;
+    }
+
     public void reset() {
         this.x = 0;
         this.y = 0;
