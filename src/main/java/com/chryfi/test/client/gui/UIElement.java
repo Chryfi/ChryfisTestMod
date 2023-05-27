@@ -6,7 +6,6 @@ import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import org.jetbrains.annotations.Contract;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,6 +14,14 @@ import java.util.Optional;
 
 @OnlyIn(Dist.CLIENT)
 public class UIElement extends GuiComponent implements GuiEventListener {
+    /**
+     * For debugging purpose
+     */
+    public int[] margin = new int[4];
+    public int[] padding = new int[4];
+
+
+
     /**
      * The entire area occupied by this UIElement. This includes the content box and margins.
      * This is used for document flow.
@@ -25,13 +32,8 @@ public class UIElement extends GuiComponent implements GuiEventListener {
      * With relative positioning, this area can be outside the document flow area {@link #flowArea}
      */
     protected final Area contentBox = new Area();
-    /**
-     * For debugging purpose
-     */
-    protected int[] margin = new int[4];
-    protected int[] padding = new int[4];
 
-    protected UITransformation transformation = new UITransformation(this);
+    private UITransformation transformation = new UITransformation(this);
     protected Color background;
     private final List<UIElement> children = new ArrayList<>();
     protected UIElement parent;
@@ -77,6 +79,27 @@ public class UIElement extends GuiComponent implements GuiEventListener {
     }
 
     /**
+     * @return The transformation element responsible for calculating positions and dimensions
+     */
+    public UITransformation getTransformation() {
+        return this.transformation;
+    }
+
+    public void resetAreas() {
+        this.flowArea.reset();
+        this.contentBox.reset();
+    }
+
+    public Area getFlowArea() {
+        return this.flowArea;
+    }
+
+    public Area getContentArea() {
+        return this.contentBox;
+    }
+
+
+    /**
      * Removes this element from the parent.
      */
     public void remove() {
@@ -91,7 +114,7 @@ public class UIElement extends GuiComponent implements GuiEventListener {
      * This should be called before the first render and when resizing.
      */
     public void resize() {
-        this.transformation.resize();
+        this.getTransformation().resize();
     }
 
     public void render(GuiContext context) {
@@ -105,21 +128,21 @@ public class UIElement extends GuiComponent implements GuiEventListener {
                     this.background.getRGBAColor());
         }
 
-        /*GuiComponent.fill(new PoseStack(), this.contentBox.getX(), this.contentBox.getY() - this.margin[0],
+        GuiComponent.fill(new PoseStack(), this.contentBox.getX(), this.contentBox.getY() - this.margin[0],
                 this.contentBox.getX() + this.contentBox.getWidth(), this.contentBox.getY(),
-                new Color(1F, 0.5F, 0F, 0.85F).getRGBAColor());
+                new Color(1F, 0.5F, 0F, 0.5F).getRGBAColor());
 
         GuiComponent.fill(new PoseStack(), this.contentBox.getX() - this.margin[3], this.contentBox.getY(),
                 this.contentBox.getX(), this.contentBox.getY() + this.contentBox.getHeight(),
-                new Color(1F, 0.5F, 0F, 0.85F).getRGBAColor());
+                new Color(1F, 0.5F, 0F, 0.5F).getRGBAColor());
 
         GuiComponent.fill(new PoseStack(), this.contentBox.getX() + this.contentBox.getWidth(), this.contentBox.getY(),
                 this.contentBox.getX() + this.contentBox.getWidth() + this.margin[1], this.contentBox.getY() + this.contentBox.getHeight(),
-                new Color(1F, 0.5F, 0F, 0.85F).getRGBAColor());
+                new Color(1F, 0.5F, 0F, 0.5F).getRGBAColor());
 
         GuiComponent.fill(new PoseStack(), this.contentBox.getX(), this.contentBox.getY() + this.contentBox.getHeight(),
                 this.contentBox.getX() + this.contentBox.getWidth(), this.contentBox.getY() + this.contentBox.getHeight() + margin[2],
-                new Color(1F, 0.5F, 0F, 0.85F).getRGBAColor());*/
+                new Color(1F, 0.5F, 0F, 0.5F).getRGBAColor());
 
 
         for (UIElement child : this.getChildren()) {

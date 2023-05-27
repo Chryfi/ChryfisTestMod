@@ -12,6 +12,8 @@ import static org.lwjgl.glfw.GLFW.*;
 
 @Mod.EventBusSubscriber
 public class KeyboardEventHandler {
+    private static UIBase screenTest = new UIBase(Minecraft.getInstance());
+
     @SubscribeEvent
     public static void onKeyPress(InputEvent.Key event) {
         if (event.getAction() != InputConstants.PRESS) {
@@ -19,10 +21,18 @@ public class KeyboardEventHandler {
         }
         switch (event.getKey()) {
             case GLFW.GLFW_KEY_0:
-                Minecraft.getInstance().setScreen(new UIBase(Minecraft.getInstance()));
+                Minecraft.getInstance().setScreen(screenTest);
                 break;
             case GLFW.GLFW_KEY_1:
+                screenTest = new UIBase(Minecraft.getInstance());
+                Minecraft.getInstance().setScreen(screenTest);
+                break;
+            case GLFW.GLFW_KEY_2:
                 long cursor = glfwCreateStandardCursor(GLFW_VRESIZE_CURSOR);
+                glfwSetCursor(Minecraft.getInstance().getWindow().getWindow(), cursor);
+                break;
+            case GLFW.GLFW_KEY_3:
+                cursor = glfwCreateStandardCursor(GLFW_HRESIZE_CURSOR);
                 glfwSetCursor(Minecraft.getInstance().getWindow().getWindow(), cursor);
                 break;
         }

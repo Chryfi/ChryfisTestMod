@@ -1,6 +1,6 @@
 package com.chryfi.test.client.gui;
 
-import org.checkerframework.checker.guieffect.qual.UI;
+import javax.print.Doc;
 
 public class UITransformation {
     private Unit x = new Unit(0);
@@ -101,121 +101,117 @@ public class UITransformation {
      * Entry point for resizing the children
      */
     public void resize() {
-        this.resize(null);
+        this.resize(new DocumentFlowRow());
     }
 
     /**
      * Recursive method for resizing
-     * @param last
+     * @param row
      */
-    private void resize(UIElement last) {
-        this.apply(last);
+    private void resize(DocumentFlowRow row) {
+        /*
+         * Reset the areas so in case of auto dimensions the children don't use these
+         * as reference for example for percentages, as the auto dimensions need to be calculated after the children.
+         */
+        this.target.resetAreas();
 
-        last = null;
+        this.apply(row);
+
+        DocumentFlowRow flowRow = new DocumentFlowRow();
         for (UIElement element : this.target.getChildren()) {
-            element.transformation.resize(last);
+            element.getTransformation().resize(flowRow);
 
             /*
              * Position absolute removes an element from the document flow
              */
-            if (element.transformation.getPositionType() != UITransformation.POSITION.ABSOLUTE) {
-                last = element;
+            if (element.getTransformation().getPositionType() != UITransformation.POSITION.ABSOLUTE) {
+                flowRow.addElement(element);
             }
         }
     }
 
     /**
      * Calculates stuff, very important. Traverse the UI tree and call this method.
-     * @param last the element that was processed before this. This is needed to create document flow.
-     *             Can be null
+     * @param row
      */
-    public void apply(UIElement last) {
-        /**
-         * TODO in DOM elements in one row align themselves to the lowest
-         * element in that row - e.g. margin of the second element can influence where the first element is
-         */
-
-        final Area parentContentBox, parentFlowArea;
-        final Area lastContentBox, lastFlowArea;
+    public void apply(DocumentFlowRow row) {
+        final Area parentContentArea, parentFlowArea;
 
         if (this.target.getParent().isPresent()) {
             parentFlowArea = this.target.getParent().get().flowArea;
-            parentContentBox = this.target.getParent().get().contentBox;
+            parentContentArea = this.target.getParent().get().contentBox;
         } else {
             parentFlowArea = new Area(0,0,0,0);
-            parentContentBox = new Area(0,0,0,0);
+            parentContentArea = new Area(0,0,0,0);
         }
 
-        if (last != null) {
-            lastFlowArea = last.flowArea;
-            lastContentBox = last.contentBox;
-        } else {
-            lastFlowArea = new Area(0,0,0,0);
-            lastContentBox = new Area(0,0,0,0);
-        }
+        DocumentFlowRow.AreaNode root = new DocumentFlowRow.AreaNode(this.target.getFlowArea());
+        DocumentFlowRow.AreaNode contentNode = root.appendChild(this.target.getContentArea());
 
-        this.target.contentBox.setWidth(this.calculatePixels(parentContentBox.getWidth(), this.width));
-        this.target.contentBox.setHeight(this.calculatePixels(parentContentBox.getHeight(), this.height));
 
-        int marginTop = this.calculatePixels(this.target.contentBox.getHeight(), this.getMarginTop());
-        int marginBottom = this.calculatePixels(this.target.contentBox.getHeight(), this.getMarginBottom());
-        int marginLeft = this.calculatePixels(this.target.contentBox.getWidth(), this.getMarginLeft());
-        int marginRight = this.calculatePixels(this.target.contentBox.getWidth(), this.getMarginRight());
-        /* debugging purpose */
-        this.target.margin = new int[]{marginTop, marginRight, marginBottom, marginLeft};
+        this.target.getContentArea().setWidth(this.calculatePixels(parentContentArea.getWidth(), this.width));
+        this.target.getContentArea().setHeight(this.calculatePixels(parentContentArea.getHeight(), this.height));
 
-        this.target.flowArea.setHeight(marginTop + marginBottom + this.target.contentBox.getHeight());
-        this.target.flowArea.setWidth(marginLeft + marginRight + this.target.contentBox.getWidth());
+        int[] margins = this.calculateMargins(this.target);
+        this.target.margin = margins;
 
-        /* target contentBox has now relative coordinates to target flowArea */
-        this.target.contentBox.setX(marginLeft);
-        this.target.contentBox.setY(marginTop);
+        this.target.getFlowArea().setHeight(margins[0] + margins[2] + this.target.contentBox.getHeight());
+        this.target.getFlowArea().setWidth(margins[3] + margins[1] + this.target.contentBox.getWidth());
 
-        /* target flowArea has now global coordinates - is now relative to the parent's contentBox */
-        this.target.flowArea.setX(parentContentBox.getX());
-        this.target.flowArea.setY(parentContentBox.getY());
+        root.setX(parentContentArea.getX());
+        root.setY(parentContentArea.getY());
 
-        int anchorX = this.calculatePixels(this.target.contentBox.getWidth(), this.anchorX);
-        int anchorY = this.calculatePixels(this.target.contentBox.getHeight(), this.anchorY);
-        int x = this.calculatePixels(parentContentBox.getWidth(), this.x) - anchorX;
-        int y = this.calculatePixels(parentContentBox.getHeight(), this.y) - anchorY;
+        int anchorX = this.calculatePixels(this.target.getContentArea().getWidth(), this.anchorX);
+        int anchorY = this.calculatePixels(this.target.getContentArea().getHeight(), this.anchorY);
+        int x = this.calculatePixels(parentContentArea.getWidth(), this.x) - anchorX;
+        int y = this.calculatePixels(parentContentArea.getHeight(), this.y) - anchorY;
 
         if (this.position == POSITION.RELATIVE) {
             /*
              * This code is responsible for document flow. Check if this element fit's
              * in the gap between last element and the parent's border.
              */
-            if (last != null) {
-                int occupiedWidth = lastFlowArea.getX() - parentContentBox.getX() + lastFlowArea.getWidth();
+            if (row.getLast().isPresent()) {
+                int occupiedWidth = row.getWidth();//lastFlowArea.getX() - parentContentArea.getX() + lastFlowArea.getWidth();
 
-                /*
-                 * target flowArea has now global coordinates
-                 */
-                if (parentContentBox.getWidth() - occupiedWidth >= this.target.flowArea.getWidth()) {
-                    this.target.flowArea.addX(occupiedWidth);
-                    //TODO we need the biggest height of a row -> build some sort of chain that will be reset when going into the next row or so
-                    this.target.flowArea.setY(lastFlowArea.getY());
+                if (parentContentArea.getWidth() - occupiedWidth >= this.target.getFlowArea().getWidth()) {
+                    root.addX(occupiedWidth);
+                    root.setY(row.getY());
                 } else {
-                    //TODO we need the biggest height of a row -> build some sort of chain that will be reset when going into the next row or so
-                    this.target.flowArea.setY(lastFlowArea.getY() + lastFlowArea.getHeight());
+                    /* element doesn't fit -> breaks into new row */
+                    root.setY(row.getY() + row.getMaxHeight());
+                    row.reset();
                 }
             }
 
-            /* target contentBox has now global coordinates */
-            this.target.contentBox.addX(this.target.flowArea.getX());
-            this.target.contentBox.addY(this.target.flowArea.getY());
-
             /* offset the position */
-            this.target.contentBox.addX(x);
-            this.target.contentBox.addY(y);
+            contentNode.addX(x);
+            contentNode.addY(y);
         } else if (this.position == POSITION.ABSOLUTE){
             /*
              * TODO In CSS absolute positions it without document flow relative to the closest ancestor.
              * What about an easy way of positioning with screen coordinates?
              */
-            this.target.contentBox.addX(x);
-            this.target.contentBox.addY(y);
+            contentNode.addX(x);
+            contentNode.addY(y);
         }
+
+        contentNode.addX(margins[3]);
+        contentNode.addY(margins[0]);
+    }
+
+    /**
+     * Calculate the margins of the given target
+     * @param target
+     * @return {marginTop, marginRight, marginBottom, marginLeft}
+     */
+    protected int[] calculateMargins(UIElement target) {
+        int marginTop = this.calculatePixels(target.getContentArea().getHeight(), target.getTransformation().getMarginTop());
+        int marginBottom = this.calculatePixels(target.getContentArea().getHeight(), target.getTransformation().getMarginBottom());
+        int marginLeft = this.calculatePixels(target.getContentArea().getWidth(), target.getTransformation().getMarginLeft());
+        int marginRight = this.calculatePixels(target.getContentArea().getWidth(), target.getTransformation().getMarginRight());
+
+        return new int[]{marginTop, marginRight, marginBottom, marginLeft};
     }
 
     /**
@@ -224,7 +220,7 @@ public class UITransformation {
      * @param unit the unit to calculate the pixels
      * @return the pixel value of the given unit.
      */
-    private int calculatePixels(int relative, Unit unit) {
+    protected int calculatePixels(int relative, Unit unit) {
         if (unit.getType() == Unit.TYPE.PERCENTAGE) {
             return Math.round(relative * unit.getValue());
         } else {
@@ -248,4 +244,6 @@ public class UITransformation {
         BLOCK,
         INLINEBLOCK
     }
+
+
 }
