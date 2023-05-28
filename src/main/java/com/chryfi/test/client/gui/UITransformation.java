@@ -1,21 +1,25 @@
 package com.chryfi.test.client.gui;
 
+import com.chryfi.test.client.gui.unit.LengthUnit;
+import com.chryfi.test.client.gui.unit.Unit;
+import com.chryfi.test.client.gui.unit.UnitType;
+
 public class UITransformation {
-    private Unit x = new Unit(0);
-    private Unit y = new Unit(0);
+    private LengthUnit x = new LengthUnit(0);
+    private LengthUnit y = new LengthUnit(0);
     private POSITION position = POSITION.RELATIVE;
-    private Unit anchorX = new Unit(0);
-    private Unit anchorY = new Unit(0);
+    private LengthUnit anchorX = new LengthUnit(0);
+    private LengthUnit anchorY = new LengthUnit(0);
     private Unit width = new Unit(0);
     private Unit height = new Unit(0);
     /**
      * padding: top, right, bottom, left
      */
-    private Unit[] padding = new Unit[]{new Unit(0), new Unit(0), new Unit(0), new Unit(0)};
+    private LengthUnit[] padding = new LengthUnit[]{new LengthUnit(0), new LengthUnit(0), new LengthUnit(0), new LengthUnit(0)};
     /**
      * margin: top, right, bottom, left
      */
-    private Unit[] margin = new Unit[]{new Unit(0), new Unit(0), new Unit(0), new Unit(0)};
+    private LengthUnit[] margin = new LengthUnit[]{new LengthUnit(0), new LengthUnit(0), new LengthUnit(0), new LengthUnit(0)};
 
     private UIElement target;
 
@@ -25,11 +29,11 @@ public class UITransformation {
         this.target = target;
     }
 
-    public Unit getX() {
+    public LengthUnit getX() {
         return this.x;
     }
 
-    public Unit getY() {
+    public LengthUnit getY() {
         return this.y;
     }
 
@@ -37,11 +41,11 @@ public class UITransformation {
         return this.position;
     }
 
-    public Unit getAnchorX() {
+    public LengthUnit getAnchorX() {
         return this.anchorX;
     }
 
-    public Unit getAnchorY() {
+    public LengthUnit getAnchorY() {
         return this.anchorY;
     }
 
@@ -58,19 +62,19 @@ public class UITransformation {
      * PADDING
      */
 
-    public Unit getPaddingTop() {
+    public LengthUnit getPaddingTop() {
         return this.padding[0];
     }
 
-    public Unit getPaddingRight() {
+    public LengthUnit getPaddingRight() {
         return this.padding[1];
     }
 
-    public Unit getPaddingBottom() {
+    public LengthUnit getPaddingBottom() {
         return this.padding[2];
     }
 
-    public Unit getPaddingLeft() {
+    public LengthUnit getPaddingLeft() {
         return this.padding[3];
     }
 
@@ -79,19 +83,19 @@ public class UITransformation {
      * MARGIN
      */
 
-    public Unit getMarginTop() {
+    public LengthUnit getMarginTop() {
         return this.margin[0];
     }
 
-    public Unit getMarginRight() {
+    public LengthUnit getMarginRight() {
         return this.margin[1];
     }
 
-    public Unit getMarginBottom() {
+    public LengthUnit getMarginBottom() {
         return this.margin[2];
     }
 
-    public Unit getMarginLeft() {
+    public LengthUnit getMarginLeft() {
         return this.margin[3];
     }
 
@@ -133,7 +137,7 @@ public class UITransformation {
      * Calculates the areas for this target element. Traverse the UI tree and call this method.
      * @param row
      */
-    private void apply(DocumentFlowRow row) {
+    private void apply(final DocumentFlowRow row) {
         final Area parentInnerArea;
 
         if (this.target.getParent().isPresent()) {
@@ -142,15 +146,15 @@ public class UITransformation {
             parentInnerArea = new Area(0,0,0,0);
         }
 
-        DocumentFlowRow.AreaNode root = new DocumentFlowRow.AreaNode(this.target.getFlowArea());
-        DocumentFlowRow.AreaNode contentNode = root.appendChild(this.target.getContentArea());
-        DocumentFlowRow.AreaNode innerNode = root.appendChild(this.target.getInnerArea());
+        final DocumentFlowRow.AreaNode root = new DocumentFlowRow.AreaNode(this.target.getFlowArea());
+        final DocumentFlowRow.AreaNode contentNode = root.appendChild(this.target.getContentArea());
+        final DocumentFlowRow.AreaNode innerNode = root.appendChild(this.target.getInnerArea());
 
 
         this.target.getContentArea().setWidth(this.calculatePixels(parentInnerArea.getWidth(), this.width));
         this.target.getContentArea().setHeight(this.calculatePixels(parentInnerArea.getHeight(), this.height));
 
-        int[] margin = this.calculateMargins(this.target);
+        final int[] margin = this.calculateMargins(this.target);
         this.target.margin = margin;
 
         this.target.getFlowArea().setHeight(margin[0] + margin[2] + this.target.getContentArea().getHeight());
@@ -182,7 +186,7 @@ public class UITransformation {
         contentNode.addX(margin[3]);
         contentNode.addY(margin[0]);
 
-        int[] padding = this.calculatePaddings(this.target);
+        final int[] padding = this.calculatePaddings(this.target);
         this.target.padding = padding;
         this.target.getInnerArea().setWidth(this.target.getContentArea().getWidth() - padding[1] - padding[3]);
         this.target.getInnerArea().setHeight(this.target.getContentArea().getHeight() - padding[0] - padding[2]);
@@ -251,8 +255,8 @@ public class UITransformation {
      * @param unit the unit to calculate the pixels
      * @return the pixel value of the given unit.
      */
-    protected int calculatePixels(int relative, Unit unit) {
-        if (unit.getType() == Unit.TYPE.PERCENTAGE) {
+    protected int calculatePixels(int relative, LengthUnit unit) {
+        if (unit.getType() == UnitType.PERCENTAGE) {
             /*
              * Math.round can cause issues sometimes where with "perfect" percentages,
              * e.g. 4 * 25% width elements might not always fit in one row
@@ -272,11 +276,4 @@ public class UITransformation {
          */
         ABSOLUTE
     }
-
-    public enum DISPLAYSTYLE {
-        BLOCK,
-        INLINEBLOCK
-    }
-
-
 }

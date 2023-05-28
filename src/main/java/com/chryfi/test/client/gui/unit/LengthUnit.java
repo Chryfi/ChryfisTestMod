@@ -1,14 +1,14 @@
-package com.chryfi.test.client.gui;
+package com.chryfi.test.client.gui.unit;
 
-public class Unit {
+public class LengthUnit {
     private float value;
-    private TYPE type;
+    protected UnitType type;
 
-    public Unit(float value) {
+    public LengthUnit(float value) {
         this.setValue(value);
     }
 
-    public Unit(int value) {
+    public LengthUnit(int value) {
         this.setValue(value);
     }
 
@@ -16,23 +16,18 @@ public class Unit {
         return this.value;
     }
 
-    public TYPE getType() {
+    public UnitType getType() {
         return this.type;
     }
 
     public void setValue(int value) {
         this.value = value;
-        this.type = TYPE.PIXEL;
+        this.type = UnitType.PIXEL;
     }
 
     public void setValue(float value) {
         this.value = value;
-        this.type = TYPE.PERCENTAGE;
-    }
-
-    public enum TYPE {
-        PIXEL,
-        PERCENTAGE
+        this.type = UnitType.PERCENTAGE;
     }
 }
 

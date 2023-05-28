@@ -67,6 +67,11 @@ public class UIPropertyBuilder {
         return this;
     }
 
+    public UIPropertyBuilder widthAuto() {
+        this.target.getTransformation().getWidth().setAuto();
+        return this;
+    }
+
     public UIPropertyBuilder height(int value) {
         this.target.getTransformation().getHeight().setValue(value);
         return this;
@@ -74,6 +79,11 @@ public class UIPropertyBuilder {
 
     public UIPropertyBuilder height(float value) {
         this.target.getTransformation().getHeight().setValue(value);
+        return this;
+    }
+
+    public UIPropertyBuilder heightAuto() {
+        this.target.getTransformation().getHeight().setAuto();
         return this;
     }
 
