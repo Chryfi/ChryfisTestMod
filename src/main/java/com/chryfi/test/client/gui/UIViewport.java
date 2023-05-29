@@ -19,16 +19,16 @@ import org.joml.Matrix4f;
 public class UIViewport extends UIElement {
     @Override
     public void onAreasCalculated() {
-        WindowHandler.x = this.innerArea.getX();
-        WindowHandler.y = this.innerArea.getY();
-        WindowHandler.width = this.innerArea.getWidth();
-        WindowHandler.height = this.innerArea.getHeight();
+        WindowHandler.x = this.contentArea.getX();
+        WindowHandler.y = this.contentArea.getY();
+        WindowHandler.width = this.contentArea.getWidth();
+        WindowHandler.height = this.contentArea.getHeight();
         WindowHandler.resize = true;
         WindowHandler.overwrite = true;
 
         Object window = Minecraft.getInstance().getWindow();
-        ((IMixinWindow) window).resize(Math.clamp(1, Integer.MAX_VALUE, this.innerArea.getWidth()),
-                Math.clamp(1, Integer.MAX_VALUE, this.innerArea.getHeight()));
+        ((IMixinWindow) window).resize(Math.clamp(1, Integer.MAX_VALUE, this.contentArea.getWidth()),
+                Math.clamp(1, Integer.MAX_VALUE, this.contentArea.getHeight()));
     }
 
     @Override
@@ -46,10 +46,15 @@ public class UIViewport extends UIElement {
         BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
         bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
 
-        this.buildUVQuad(bufferBuilder, this.innerArea.getX(), this.innerArea.getY(),
-                this.innerArea.getX() + this.innerArea.getWidth(), this.innerArea.getY() + this.innerArea.getHeight());
+        this.buildUVQuad(bufferBuilder, this.contentArea.getX(), this.contentArea.getY(),
+                this.contentArea.getX() + this.contentArea.getWidth(), this.contentArea.getY() + this.contentArea.getHeight());
 
         BufferUploader.drawWithShader(bufferBuilder.end());
+
+        if (UIScreen.debug) {
+            this.drawMargins();
+            this.drawPaddings();
+        }
 
         for (UIElement child : this.getChildren()) {
             child.render(context);
@@ -57,9 +62,9 @@ public class UIViewport extends UIElement {
     }
 
     private void buildUVQuad(BufferBuilder bufferBuilder, int x0, int y0, int x1, int y1) {
-        bufferBuilder.vertex(x1, y0, -500).uv(1,1).endVertex();
-        bufferBuilder.vertex(x0, y0, -500).uv(0,1).endVertex();
-        bufferBuilder.vertex(x0, y1, -500).uv(0,0).endVertex();
-        bufferBuilder.vertex(x1, y1, -500).uv(1,0).endVertex();
+        bufferBuilder.vertex(x1, y0, 0).uv(1,1).endVertex();
+        bufferBuilder.vertex(x0, y0, 0).uv(0,1).endVertex();
+        bufferBuilder.vertex(x0, y1, 0).uv(0,0).endVertex();
+        bufferBuilder.vertex(x1, y1, 0).uv(1,0).endVertex();
     }
 }
