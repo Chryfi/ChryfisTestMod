@@ -1,7 +1,7 @@
 package com.chryfi.test.client.gui.unit;
 
 public class LengthUnit {
-    private float value;
+    protected float value;
     protected UnitType type;
 
     public LengthUnit(float value) {

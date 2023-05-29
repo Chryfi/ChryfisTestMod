@@ -9,6 +9,10 @@ public class Unit extends LengthUnit {
         super(value);
     }
 
+    public float getValue() {
+        return this.type == UnitType.AUTO ? 0F : this.value;
+    }
+
     public void setAuto() {
         this.type = UnitType.AUTO;
     }
