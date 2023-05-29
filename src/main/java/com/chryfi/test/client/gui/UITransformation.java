@@ -124,6 +124,10 @@ public class UITransformation {
         for (UIElement element : this.target.getChildren()) {
             element.getTransformation().resize(flowRow);
 
+            if (flowRow.isEnd()) {
+                flowRow.reset();
+            }
+
             /*
              * Position absolute removes an element from the document flow
              */
@@ -204,6 +208,8 @@ public class UITransformation {
      * @param root the area flow node of the element to place in the document.
      */
     protected void calculateDocumentFlow(DocumentFlowRow row, UIElement target, DocumentFlowRow.AreaNode root) {
+        if (row.getLast().isEmpty()) return;
+
         final Area parentInnerArea;
 
         if (target.getParent().isPresent()) {
@@ -212,17 +218,15 @@ public class UITransformation {
             parentInnerArea = new Area(0,0,0,0);
         }
 
-        if (row.getLast().isPresent()) {
-            int occupiedWidth = row.getWidth();//lastFlowArea.getX() - parentContentArea.getX() + lastFlowArea.getWidth();
+        int occupiedWidth = row.getWidth();
 
-            if (parentInnerArea.getWidth() - occupiedWidth >= target.getFlowArea().getWidth()) {
-                root.addX(occupiedWidth);
-                root.setY(row.getY());
-            } else {
-                /* element doesn't fit -> breaks into new row */
-                root.setY(row.getY() + row.getMaxHeight());
-                row.reset();
-            }
+        if (parentInnerArea.getWidth() - occupiedWidth >= target.getFlowArea().getWidth()) {
+            root.addX(occupiedWidth);
+            root.addY(row.getY() - parentInnerArea.getY());
+        } else {
+            /* element doesn't fit -> breaks into new row */
+            root.addY(row.getY() + row.getMaxHeight() - parentInnerArea.getY());
+            row.end();
         }
     }
 

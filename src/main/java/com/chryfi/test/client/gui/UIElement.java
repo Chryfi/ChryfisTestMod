@@ -120,6 +120,18 @@ public class UIElement extends GuiComponent implements GuiEventListener {
     }
 
     /**
+     * Useful for performing operations that should propagate through the areas.
+     * @return
+     */
+    public DocumentFlowRow.AreaNode getAreaChain() {
+        final DocumentFlowRow.AreaNode root = new DocumentFlowRow.AreaNode(this.flowArea);
+        final DocumentFlowRow.AreaNode contentNode = root.appendChild(this.contentArea);
+        final DocumentFlowRow.AreaNode innerNode = contentNode.appendChild(this.innerArea);
+
+        return root;
+    }
+
+    /**
      * Removes this element from the parent.
      */
     public void remove() {

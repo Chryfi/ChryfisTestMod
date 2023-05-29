@@ -26,6 +26,8 @@ public class DocumentFlowRow {
      */
     private int width;
     private int y;
+    private boolean ended;
+    private Orientation orientation = Orientation.BOTTOM;
 
     public Optional<UIElement> getLast() {
         return this.elements.isEmpty() ? Optional.empty() : Optional.of(this.elements.get(this.elements.size() - 1));
@@ -53,15 +55,30 @@ public class DocumentFlowRow {
         this.y = 0;
         this.areas.clear();
         this.elements.clear();
+        this.ended = false;
+    }
+
+    /**
+     * Marks this row as ended
+     * Nothing can be added anymore until it is reset, see {@link #reset()}
+     */
+    public void end() {
+        this.ended = true;
+    }
+
+    public boolean isEnd() {
+        return this.ended;
     }
 
     /**
      * Adds the element to the chain and, if necessary, adjust it based on the current chain.
+     * Can only add an element to this row if it didn't end. See {@link #isEnd()} and {@link #end()}.
      * @param element
      */
     public void addElement(UIElement element) {
-        AreaNode node = new AreaNode(element.getFlowArea());
-        node.appendChild(element.getContentArea());
+        if (this.ended) return;
+
+        AreaNode node = element.getAreaChain();
 
         if (!this.areas.isEmpty()) {
             /*
@@ -69,11 +86,15 @@ public class DocumentFlowRow {
              * are already in the correct positions.
              */
             if (element.getFlowArea().getHeight() < this.maxHeight) {
-                node.addY(this.maxHeight - element.getFlowArea().getHeight());
+                if (this.orientation == Orientation.BOTTOM) {
+                    node.addY(this.maxHeight - element.getFlowArea().getHeight());
+                }
             } else if (element.getFlowArea().getHeight() > this.maxHeight) {
-                this.recalculateRow(node);
                 this.maxHeight = element.getFlowArea().getHeight();
-                this.y = element.getFlowArea().getY();
+
+                if (this.orientation == Orientation.BOTTOM) {
+                    this.recalculateRow();
+                }
             }
         } else {
             this.maxHeight = element.getFlowArea().getHeight();
@@ -85,14 +106,15 @@ public class DocumentFlowRow {
         this.width += element.getFlowArea().getWidth();
     }
 
-    private void recalculateRow(AreaNode initiator) {
+    /**
+     * This method recalculates the elements to all align at the bottom.
+     */
+    private void recalculateRow() {
         for (AreaNode areaNode : this.areas) {
-            if (areaNode == initiator) continue;
+            int areaMaxY = areaNode.area.getY() + areaNode.area.getHeight();
+            int maxY = this.y + this.maxHeight;
 
-            int areaNodeMax = areaNode.area.getY() + areaNode.area.getHeight();
-            int initiatorMax = initiator.area.getY() + initiator.area.getHeight();
-
-            areaNode.addY(initiatorMax - areaNodeMax);
+            areaNode.addY(maxY - areaMaxY);
         }
     }
 
@@ -139,5 +161,10 @@ public class DocumentFlowRow {
                 return this.child = new AreaNode(area);
             }
         }
+    }
+
+    public enum Orientation {
+        TOP,
+        BOTTOM
     }
 }
