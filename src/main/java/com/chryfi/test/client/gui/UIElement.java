@@ -84,7 +84,7 @@ public class UIElement extends GuiComponent implements GuiEventListener {
     /**
      * @return a list of the children of this element. Changes to this list will NOT be reflected in the internal list.
      *          See methods that modify the child/parent relationship
-     *          like {@link #remove()} or {@link #removeChild()} for alternatives
+     *          like {@link #remove()} or {@link #removeChild(UIElement)} for alternatives
      */
     public List<UIElement> getChildren() {
         return new ArrayList<>(this.children);
@@ -172,9 +172,45 @@ public class UIElement extends GuiComponent implements GuiEventListener {
         }
 
         if (this.background != null) {
-            GuiComponent.fill(new PoseStack(), this.contentArea.getX(), this.contentArea.getY(),
+            /*GuiComponent.fill(new PoseStack(), this.contentArea.getX(), this.contentArea.getY(),
                     this.contentArea.getX() + this.contentArea.getWidth(), this.contentArea.getY() + this.contentArea.getHeight(),
-                    this.background.getRGBAColor());
+                    this.background.getRGBAColor());*/
+
+            this.vLine(new PoseStack(), this.contentArea.getX(),
+                    this.contentArea.getY() - 1,
+                    this.contentArea.getY() + this.contentArea.getHeight(),
+                    new Color(0,0,0, 1).getRGBAColor());
+            this.vLine(new PoseStack(), this.contentArea.getX() + 1,
+                    this.contentArea.getY() - 1,
+                    this.contentArea.getY() + this.contentArea.getHeight(),
+                    new Color(0,0,0, 1).getRGBAColor());
+
+            this.vLine(new PoseStack(), this.contentArea.getX() + this.contentArea.getWidth() - 1,
+                    this.contentArea.getY() - 1,
+                    this.contentArea.getY() + this.contentArea.getHeight(),
+                    new Color(0,0,0, 1).getRGBAColor());
+            this.vLine(new PoseStack(), this.contentArea.getX() + this.contentArea.getWidth() - 2,
+                    this.contentArea.getY() - 1,
+                    this.contentArea.getY() + this.contentArea.getHeight(),
+                    new Color(0,0,0, 1).getRGBAColor());
+
+            this.hLine(new PoseStack(), this.contentArea.getX(),
+                    this.contentArea.getX() + this.contentArea.getWidth() - 1,
+                    this.contentArea.getY(),
+                    new Color(0,0,0, 1).getRGBAColor());
+            this.hLine(new PoseStack(), this.contentArea.getX(),
+                    this.contentArea.getX() + this.contentArea.getWidth() - 1,
+                    this.contentArea.getY() + 1,
+                    new Color(0,0,0, 1).getRGBAColor());
+
+            this.hLine(new PoseStack(), this.contentArea.getX(),
+                    this.contentArea.getX() + this.contentArea.getWidth() - 1,
+                    this.contentArea.getY() + this.contentArea.getHeight() - 1,
+                    new Color(0,0,0, 1).getRGBAColor());
+            this.hLine(new PoseStack(), this.contentArea.getX(),
+                    this.contentArea.getX() + this.contentArea.getWidth() - 1,
+                    this.contentArea.getY() + this.contentArea.getHeight() - 2,
+                    new Color(0,0,0, 1).getRGBAColor());
         }
 
         if (UIScreen.debug) {
@@ -187,7 +223,7 @@ public class UIElement extends GuiComponent implements GuiEventListener {
         }
     }
 
-    private void drawMargins() {
+    protected void drawMargins() {
         GuiComponent.fill(new PoseStack(), this.contentArea.getX(), this.contentArea.getY() - this.margin[0],
                 this.contentArea.getX() + this.contentArea.getWidth(), this.contentArea.getY(),
                 new Color(1F, 0.5F, 0F, 0.5F).getRGBAColor());
@@ -205,7 +241,7 @@ public class UIElement extends GuiComponent implements GuiEventListener {
                 new Color(1F, 0.5F, 0F, 0.5F).getRGBAColor());
     }
 
-    private void drawPaddings() {
+    protected void drawPaddings() {
         GuiComponent.fill(new PoseStack(), this.innerArea.getX(), this.contentArea.getY(),
                 this.innerArea.getX() + this.innerArea.getWidth(), this.contentArea.getY() + this.padding[0],
                 new Color(0F, 1F, 0F, 0.5F).getRGBAColor());
