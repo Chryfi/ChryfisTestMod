@@ -20,7 +20,7 @@
           <y:Geometry height="52.799999999999955" width="187.0" x="653.5" y="219.17932968750043"/>
           <y:Fill color="#E8EEF7" color2="#B7C9E3" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="48.103515625" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="181.43359375" x="2.783203125" xml:space="preserve" y="2.3482421874999773">Calculate
+          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="48.103515625" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="181.43359375" x="2.783203125" xml:space="preserve" y="2.348242187499949">Calculate
 margins
 (uses content area width / height)<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:ModelParameter><y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/></y:ModelParameter></y:NodeLabel>
         </y:GenericNode>
@@ -32,7 +32,7 @@ margins
           <y:Geometry height="66.40000000000006" width="277.79999999999995" x="608.1" y="108.17932968750031"/>
           <y:Fill color="#E8EEF7" color2="#B7C9E3" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="62.8046875" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="173.435546875" x="52.18222656249998" xml:space="preserve" y="1.7976562500000455">Set
+          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="62.8046875" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="173.435546875" x="52.18222656249998" xml:space="preserve" y="1.797656250000017">Set
 content area width / height
 relative to
 parent inner area width / height)<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:ModelParameter><y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/></y:ModelParameter></y:NodeLabel>
@@ -140,7 +140,7 @@ content area width / height<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/>
           <y:Geometry height="4.0" width="238.1765906623234" x="1230.2827832822686" y="837.158659375"/>
           <y:Fill color="#CCCCFF" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" hasText="false" height="4.0" horizontalTextPosition="center" iconTextGap="4" modelName="sandwich" modelPosition="s" textColor="#000000" verticalTextPosition="bottom" visible="true" width="4.0" x="117.08829533116182" y="8.0"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" hasText="false" height="4.0" horizontalTextPosition="center" iconTextGap="4" modelName="sandwich" modelPosition="s" textColor="#000000" verticalTextPosition="bottom" visible="true" width="4.0" x="117.08829533116159" y="8.0"/>
           <y:Image alphaImage="true" refid="1"/>
         </y:ImageNode>
       </data>
@@ -206,10 +206,10 @@ fits in the document flow<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></
     <node id="n15">
       <data key="d6">
         <y:ImageNode>
-          <y:Geometry height="4.0" width="429.72864000000027" x="1126.2045977721868" y="24.579329687500177"/>
+          <y:Geometry height="4.0" width="430.7116800000001" x="1125.2215577721868" y="24.579329687500177"/>
           <y:Fill color="#CCCCFF" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" hasText="false" height="4.0" horizontalTextPosition="center" iconTextGap="4" modelName="sandwich" modelPosition="s" textColor="#000000" verticalTextPosition="bottom" visible="true" width="4.0" x="212.86432000000013" y="8.0"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" hasText="false" height="4.0" horizontalTextPosition="center" iconTextGap="4" modelName="sandwich" modelPosition="s" textColor="#000000" verticalTextPosition="bottom" visible="true" width="4.0" x="213.35583999999994" y="8.0"/>
           <y:Image alphaImage="true" refid="1"/>
         </y:ImageNode>
       </data>
@@ -456,7 +456,7 @@ to inner area position<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:L
     <edge id="e12" source="n15" target="n13">
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="-189.98529347368483" sy="1.9894203125001582" tx="0.0" ty="0.0"/>
+          <y:Path sx="-190.4199006315796" sy="1.9894203125001582" tx="0.0" ty="0.0"/>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="delta"/>
           <y:BendStyle smoothed="false"/>
@@ -466,7 +466,7 @@ to inner area position<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:L
     <edge id="e13" source="n15" target="n9">
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="172.24268210526907" sy="2.016070312504098" tx="0.0" ty="0.0"/>
+          <y:Path sx="172.63670156419263" sy="2.016070312504098" tx="0.0" ty="0.0"/>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="delta"/>
           <y:BendStyle smoothed="false"/>

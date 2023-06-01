@@ -3,6 +3,11 @@ package com.chryfi.test.client.gui;
 import com.chryfi.test.client.gui.unit.LengthUnit;
 import com.chryfi.test.client.gui.unit.Unit;
 import com.chryfi.test.client.gui.unit.UnitType;
+import org.checkerframework.checker.guieffect.qual.UI;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
 
 public class UITransformation {
     private LengthUnit x = new LengthUnit(0);
@@ -108,57 +113,103 @@ public class UITransformation {
 
     /**
      * Recursive method for resizing traversing the tree.
-     * @param row
+     * @param parentRow
      */
-    private void resize(DocumentFlowRow row) {
+    private void resize(DocumentFlowRow parentRow) {
         /*
-         * Reset the areas so in case of auto dimensions the children don't use these
-         * as reference for example for percentages, as the auto dimensions need to be calculated after the children.
+         * Reset the areas for a clean start.
          */
         this.target.resetAreas();
 
-        this.apply(row);
-        this.target.onAreasCalculated();
+        boolean widthAuto = this.width.getType() == UnitType.AUTO;
+        boolean heightAuto = this.height.getType() == UnitType.AUTO;
+        boolean autoDimensions = widthAuto || heightAuto;
 
-        DocumentFlowRow flowRow = new DocumentFlowRow();
-        for (UIElement element : this.target.getChildren()) {
+        if (autoDimensions) {
+            /*
+             * To calculate the dimensions we don't need document flow for this target.
+             * When you pass it and if this target does not fit in the row, the row will end.
+             * This would mess up the document flow, because the dimension might turn out to be smaller than 100%
+             * and this target might fit into the row after all.
+             */
+            this.apply(null);
+        } else {
+            this.apply(parentRow);
+        }
+
+        DocumentFlowRow childrenRow = new DocumentFlowRow();
+        ChildrenResult result = this.traverseChildren(childrenRow);
+
+        int[] paddings = this.calculatePaddings();
+
+        if (widthAuto && !result.rowBreak) {
+            this.width.setValue(childrenRow.getWidth() + paddings[1] + paddings[3]);
+        }
+
+        if (heightAuto) {
+            this.height.setValue(result.totalHeight + paddings[0] + paddings[2]);
+        }
+
+        if (autoDimensions) {
+            this.target.resetAreas();
+            this.apply(parentRow);
+            /*
+             * Traverse the children again as things like paddings and margins, when defined as percentages,
+             * refer to the parent's dimensions. The parent's dimensions are only finished after this code block here.
+             */
+            this.traverseChildren(new DocumentFlowRow());
+        }
+
+        if (widthAuto) this.width.setAuto();
+        if (heightAuto) this.height.setAuto();
+
+        this.target.onAreasCalculated();
+    }
+
+    /**
+     * @return true when the children didn't fit into one continuous document flow row.
+     */
+    protected ChildrenResult traverseChildren(DocumentFlowRow flowRow) {
+        boolean rowBreak = false;
+        int totalHeight = 0;
+        List<UIElement> children = this.target.getChildren();
+
+        for (int i = 0; i < children.size(); i++) {
+            UIElement element = children.get(i);
             element.getTransformation().resize(flowRow);
 
             if (flowRow.isEnd()) {
+                totalHeight += flowRow.getMaxHeight();
                 flowRow.reset();
+                rowBreak = true;
             }
 
-            /*
-             * Position absolute removes an element from the document flow
-             */
             if (element.getTransformation().getPositionType() != UITransformation.POSITION.ABSOLUTE) {
                 flowRow.addElement(element);
             }
+
+            if (i == children.size() - 1) {
+                totalHeight += flowRow.getMaxHeight();
+            }
         }
+
+        return new ChildrenResult(rowBreak, totalHeight);
     }
 
     /**
      * Calculates the areas for this target element. Traverse the UI tree and call this method.
      * @param row
      */
-    private void apply(final DocumentFlowRow row) {
-        final Area parentInnerArea;
-
-        if (this.target.getParent().isPresent()) {
-            parentInnerArea = this.target.getParent().get().getInnerArea();
-        } else {
-            parentInnerArea = new Area(0,0,0,0);
-        }
+    private void apply(@Nullable final DocumentFlowRow row) {
+        final Area parentInnerArea = this.getParentInnerArea();
 
         final DocumentFlowRow.AreaNode root = new DocumentFlowRow.AreaNode(this.target.getFlowArea());
         final DocumentFlowRow.AreaNode contentNode = root.appendChild(this.target.getContentArea());
         final DocumentFlowRow.AreaNode innerNode = root.appendChild(this.target.getInnerArea());
 
-
-        this.target.getContentArea().setWidth(this.calculatePixels(parentInnerArea.getWidth(), this.width));
-        this.target.getContentArea().setHeight(this.calculatePixels(parentInnerArea.getHeight(), this.height));
-
-        final int[] margin = this.calculateMargins(this.target);
+        this.setContentAreaDimensions();
+        
+        final int[] margin = this.calculateMargins();
         this.target.margin = margin;
 
         this.target.getFlowArea().setHeight(margin[0] + margin[2] + this.target.getContentArea().getHeight());
@@ -173,7 +224,7 @@ public class UITransformation {
         int y = this.calculatePixels(parentInnerArea.getHeight(), this.y) - anchorY;
 
         if (this.position == POSITION.RELATIVE) {
-            this.calculateDocumentFlow(row, this.target, root);
+            if (row != null) this.calculateDocumentFlow(row, this.target, root);
 
             /* offset the position */
             contentNode.addX(x);
@@ -190,7 +241,7 @@ public class UITransformation {
         contentNode.addX(margin[3]);
         contentNode.addY(margin[0]);
 
-        final int[] padding = this.calculatePaddings(this.target);
+        final int[] padding = this.calculatePaddings();
         this.target.padding = padding;
         this.target.getInnerArea().setWidth(this.target.getContentArea().getWidth() - padding[1] - padding[3]);
         this.target.getInnerArea().setHeight(this.target.getContentArea().getHeight() - padding[0] - padding[2]);
@@ -210,13 +261,7 @@ public class UITransformation {
     protected void calculateDocumentFlow(DocumentFlowRow row, UIElement target, DocumentFlowRow.AreaNode root) {
         if (row.getLast().isEmpty()) return;
 
-        final Area parentInnerArea;
-
-        if (target.getParent().isPresent()) {
-            parentInnerArea = target.getParent().get().getInnerArea();
-        } else {
-            parentInnerArea = new Area(0,0,0,0);
-        }
+        final Area parentInnerArea = this.getParentInnerArea();
 
         int occupiedWidth = row.getWidth();
 
@@ -232,25 +277,46 @@ public class UITransformation {
 
     /**
      * Calculate the margins of the given target
-     * @param target
      * @return {marginTop, marginRight, marginBottom, marginLeft}
      */
-    protected int[] calculateMargins(UIElement target) {
-        int marginTop = this.calculatePixels(target.getContentArea().getHeight(), target.getTransformation().getMarginTop());
-        int marginBottom = this.calculatePixels(target.getContentArea().getHeight(), target.getTransformation().getMarginBottom());
-        int marginLeft = this.calculatePixels(target.getContentArea().getWidth(), target.getTransformation().getMarginLeft());
-        int marginRight = this.calculatePixels(target.getContentArea().getWidth(), target.getTransformation().getMarginRight());
+    protected int[] calculateMargins() {
+        final Area parentInnerArea = this.getParentInnerArea();
+        int marginTop = this.calculatePixels(parentInnerArea.getHeight(), target.getTransformation().getMarginTop());
+        int marginBottom = this.calculatePixels(parentInnerArea.getHeight(), target.getTransformation().getMarginBottom());
+        int marginLeft = this.calculatePixels(parentInnerArea.getWidth(), target.getTransformation().getMarginLeft());
+        int marginRight = this.calculatePixels(parentInnerArea.getWidth(), target.getTransformation().getMarginRight());
 
         return new int[]{marginTop, marginRight, marginBottom, marginLeft};
     }
 
-    protected int[] calculatePaddings(UIElement target) {
-        int paddingTop = this.calculatePixels(target.getContentArea().getHeight(), target.getTransformation().getPaddingTop());
-        int paddingBottom = this.calculatePixels(target.getContentArea().getHeight(), target.getTransformation().getPaddingBottom());
-        int paddingLeft = this.calculatePixels(target.getContentArea().getWidth(), target.getTransformation().getPaddingLeft());
-        int paddingRight = this.calculatePixels(target.getContentArea().getWidth(), target.getTransformation().getPaddingRight());
+    protected int[] calculatePaddings() {
+        final Area parentInnerArea = this.getParentInnerArea();
+        int paddingTop = this.calculatePixels(parentInnerArea.getHeight(), target.getTransformation().getPaddingTop());
+        int paddingBottom = this.calculatePixels(parentInnerArea.getHeight(), target.getTransformation().getPaddingBottom());
+        int paddingLeft = this.calculatePixels(parentInnerArea.getWidth(), target.getTransformation().getPaddingLeft());
+        int paddingRight = this.calculatePixels(parentInnerArea.getWidth(), target.getTransformation().getPaddingRight());
 
         return new int[]{paddingTop, paddingRight, paddingBottom, paddingLeft};
+    }
+
+    protected void setContentAreaDimensions() {
+        final Optional<UIElement> parent = this.target.getParent();
+        final Area parentInnerArea = this.getParentInnerArea();
+
+        Unit effectiveWidth = this.width.getType() == UnitType.AUTO ? new Unit(1F) : this.width;
+        Unit effectiveHeight = this.height.getType() == UnitType.AUTO ? new Unit(Integer.MAX_VALUE) : this.height;
+
+        if (parent.isPresent() && parent.get().getTransformation().getWidth().getType() == UnitType.AUTO) {
+            this.target.getContentArea().setWidth(this.calculatePixels(0, effectiveWidth));
+        } else {
+            this.target.getContentArea().setWidth(this.calculatePixels(parentInnerArea.getWidth(), effectiveWidth));
+        }
+
+        if (parent.isPresent() && parent.get().getTransformation().getHeight().getType() == UnitType.AUTO) {
+            this.target.getContentArea().setHeight(this.calculatePixels(0, effectiveHeight));
+        } else {
+            this.target.getContentArea().setHeight(this.calculatePixels(parentInnerArea.getHeight(), effectiveHeight));
+        }
     }
 
     /**
@@ -272,6 +338,17 @@ public class UITransformation {
         }
     }
 
+    protected Area getParentInnerArea() {
+        final Area parentInnerArea;
+
+        if (this.target.getParent().isPresent()) {
+            parentInnerArea = this.target.getParent().get().getInnerArea();
+        } else {
+            parentInnerArea = new Area(0,0,0,0);
+        }
+
+        return parentInnerArea;
+    }
 
     public enum POSITION {
         RELATIVE,
@@ -279,5 +356,26 @@ public class UITransformation {
          * Relative to its own position, but does not contribute to the document flow.
          */
         ABSOLUTE
+    }
+
+    /**
+     * Helper class to return the results of traversing the children elements.
+     */
+    private class ChildrenResult {
+        private boolean rowBreak;
+        private int totalHeight;
+
+        public ChildrenResult(boolean rowBreak, int totalHeight) {
+            this.totalHeight = totalHeight;
+            this.rowBreak = rowBreak;
+        }
+
+        public boolean isRowBreak() {
+            return this.rowBreak;
+        }
+
+        public int getTotalHeight() {
+            return this.totalHeight;
+        }
     }
 }
