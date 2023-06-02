@@ -46,6 +46,10 @@ public class UITransformation {
         return this.position;
     }
 
+    public void setPositionType(POSITION type) {
+        this.position = type;
+    }
+
     public LengthUnit getAnchorX() {
         return this.anchorX;
     }

@@ -16,6 +16,15 @@ public class UIPropertyBuilder {
         return new UIPropertyBuilder(element);
     }
 
+    public UIPropertyBuilder relative() {
+        this.target.getTransformation().setPositionType(UITransformation.POSITION.RELATIVE);
+        return this;
+    }
+
+    public UIPropertyBuilder absolute() {
+        this.target.getTransformation().setPositionType(UITransformation.POSITION.ABSOLUTE);
+        return this;
+    }
 
     public UIPropertyBuilder x(float x) {
         this.target.getTransformation().getX().setValue(x);
