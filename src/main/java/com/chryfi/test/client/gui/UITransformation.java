@@ -129,7 +129,7 @@ public class UITransformation {
             /*
              * To calculate the dimensions we don't need document flow for this target.
              * When you pass it and if this target does not fit in the row, the row will end.
-             * This would mess up the document flow, because the dimension might turn out to be smaller than 100%
+             * This would mess up the document flow, because the dimension might turn out to be smaller
              * and this target might fit into the row after all.
              */
             this.apply(null);
@@ -164,6 +164,25 @@ public class UITransformation {
         if (heightAuto) this.height.setAuto();
 
         this.target.onAreasCalculated();
+    }
+
+    /**
+     * Offset this element and the children element, only if their position type
+     * implies a positional relationship between the child and this element.
+     * Position type global does not fall under this category, as it ignores the parent's position.
+     *
+     * The offset will always be applied to this target element,
+     * but when the child does not have a positional relationship with this target, it will be ignored.
+     * @param x
+     * @param y
+     */
+    public void offsetTree(int x, int y) {
+        this.target.getAreaChain().addX(x);
+        this.target.getAreaChain().addY(y);
+
+        for (UIElement child : this.target.getChildren()) {
+            child.getTransformation().offsetTree(x, y);
+        }
     }
 
     /**
@@ -208,7 +227,7 @@ public class UITransformation {
         final DocumentFlowRow.AreaNode innerNode = root.appendChild(this.target.getInnerArea());
 
         this.setContentAreaDimensions();
-        
+
         final int[] margin = this.calculateMargins();
         this.target.margin = margin;
 
@@ -281,20 +300,20 @@ public class UITransformation {
      */
     protected int[] calculateMargins() {
         final Area parentInnerArea = this.getParentInnerArea();
-        int marginTop = this.calculatePixels(parentInnerArea.getHeight(), target.getTransformation().getMarginTop());
-        int marginBottom = this.calculatePixels(parentInnerArea.getHeight(), target.getTransformation().getMarginBottom());
-        int marginLeft = this.calculatePixels(parentInnerArea.getWidth(), target.getTransformation().getMarginLeft());
-        int marginRight = this.calculatePixels(parentInnerArea.getWidth(), target.getTransformation().getMarginRight());
+        int marginTop = this.calculatePixels(parentInnerArea.getHeight(), this.getMarginTop());
+        int marginBottom = this.calculatePixels(parentInnerArea.getHeight(), this.getMarginBottom());
+        int marginLeft = this.calculatePixels(parentInnerArea.getWidth(), this.getMarginLeft());
+        int marginRight = this.calculatePixels(parentInnerArea.getWidth(), this.getMarginRight());
 
         return new int[]{marginTop, marginRight, marginBottom, marginLeft};
     }
 
     protected int[] calculatePaddings() {
         final Area parentInnerArea = this.getParentInnerArea();
-        int paddingTop = this.calculatePixels(parentInnerArea.getHeight(), target.getTransformation().getPaddingTop());
-        int paddingBottom = this.calculatePixels(parentInnerArea.getHeight(), target.getTransformation().getPaddingBottom());
-        int paddingLeft = this.calculatePixels(parentInnerArea.getWidth(), target.getTransformation().getPaddingLeft());
-        int paddingRight = this.calculatePixels(parentInnerArea.getWidth(), target.getTransformation().getPaddingRight());
+        int paddingTop = this.calculatePixels(parentInnerArea.getHeight(), this.getPaddingTop());
+        int paddingBottom = this.calculatePixels(parentInnerArea.getHeight(), this.getPaddingBottom());
+        int paddingLeft = this.calculatePixels(parentInnerArea.getWidth(), this.getPaddingLeft());
+        int paddingRight = this.calculatePixels(parentInnerArea.getWidth(), this.getPaddingRight());
 
         return new int[]{paddingTop, paddingRight, paddingBottom, paddingLeft};
     }

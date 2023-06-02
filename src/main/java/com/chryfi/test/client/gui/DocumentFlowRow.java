@@ -15,7 +15,6 @@ import java.util.Optional;
  * In plain DOM it nodes all position at the baseline of one consecutive chain of blocks.
  */
 public class DocumentFlowRow {
-    private final List<AreaNode> areas = new ArrayList<>();
     private final List<UIElement> elements = new ArrayList<>();
     /**
      * The biggest height of the elements in this row.
@@ -53,7 +52,6 @@ public class DocumentFlowRow {
         this.maxHeight = 0;
         this.width = 0;
         this.y = 0;
-        this.areas.clear();
         this.elements.clear();
         this.ended = false;
     }
@@ -78,16 +76,14 @@ public class DocumentFlowRow {
     public void addElement(UIElement element) {
         if (this.ended) return;
 
-        AreaNode node = element.getAreaChain();
-
-        if (!this.areas.isEmpty()) {
+        if (!this.elements.isEmpty()) {
             /*
              * Nothing needs to be done when the height is equal, as then all the previous elements
              * are already in the correct positions.
              */
             if (element.getFlowArea().getHeight() < this.maxHeight) {
                 if (this.orientation == Orientation.BOTTOM) {
-                    node.addY(this.maxHeight - element.getFlowArea().getHeight());
+                    element.getAreaChain().addY(this.maxHeight - element.getFlowArea().getHeight());
                 }
             } else if (element.getFlowArea().getHeight() > this.maxHeight) {
                 this.maxHeight = element.getFlowArea().getHeight();
@@ -101,7 +97,6 @@ public class DocumentFlowRow {
             this.y = element.getFlowArea().getY();
         }
 
-        this.areas.add(node);
         this.elements.add(element);
         this.width += element.getFlowArea().getWidth();
     }
@@ -110,11 +105,12 @@ public class DocumentFlowRow {
      * This method recalculates the elements to all align at the bottom.
      */
     private void recalculateRow() {
-        for (AreaNode areaNode : this.areas) {
-            int areaMaxY = areaNode.area.getY() + areaNode.area.getHeight();
+        for (UIElement element : this.elements) {
+            AreaNode root = element.getAreaChain();
+            int areaMaxY = root.area.getY() + root.area.getHeight();
             int maxY = this.y + this.maxHeight;
 
-            areaNode.addY(maxY - areaMaxY);
+            element.getTransformation().offsetTree(0, maxY - areaMaxY);
         }
     }
 
