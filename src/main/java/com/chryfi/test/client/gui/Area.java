@@ -59,7 +59,7 @@ public class Area {
         this.height = Math.clamp(0, Integer.MAX_VALUE, height);
     }
 
-    public boolean isInside(int x, int y) {
+    public boolean isInside(double x, double y) {
         return x >= this.x && x < this.x + this.width && y >= this.y && y < this.y + this.height;
     }
 

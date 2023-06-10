@@ -163,7 +163,7 @@ public class UIElement extends GuiComponent implements GuiEventListener {
     /**
      * This gets called when the UIElement is closed.
      */
-    public void onClose() {
+    public final void onClose() {
         this._onClose();
 
         for (UIElement element : this.getChildren()) {
@@ -273,36 +273,68 @@ public class UIElement extends GuiComponent implements GuiEventListener {
                 new Color(0F, 1F, 0F, 0.5F).getRGBAColor());
     }
 
+
+    /*
+     * Mouse event capturing template pattern
+     */
+
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int mouseKey) {
+    public final boolean mouseClicked(double mouseX, double mouseY, int mouseKey) {
         List<UIElement> children = this.getChildren();
         for (int i = children.size() - 1; i >= 0; i--) {
             UIElement element = children.get(i);
             if (element.mouseClicked(mouseX, mouseY, mouseKey)) return true;
         }
 
+        return this.mouseClick(mouseX, mouseY, mouseKey);
+    }
+
+    public boolean mouseClick(double mouseX, double mouseY, int mouseKey) {
         return false;
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int mouseKey) {
+    public final boolean mouseReleased(double mouseX, double mouseY, int mouseKey) {
         List<UIElement> children = this.getChildren();
         for (int i = children.size() - 1; i >= 0; i--) {
             UIElement element = children.get(i);
             if (element.mouseReleased(mouseX, mouseY, mouseKey)) return true;
         }
 
+        return this.mouseRelease(mouseX, mouseY, mouseKey);
+    }
+
+    public boolean mouseRelease(double mouseX, double mouseY, int mouseKey) {
         return false;
     }
 
     @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int mouseKey, double dragX, double dragY) {
+    public final boolean mouseDragged(double mouseX, double mouseY, int mouseKey, double dragX, double dragY) {
         List<UIElement> children = this.getChildren();
         for (int i = children.size() - 1; i >= 0; i--) {
             UIElement element = children.get(i);
             if (element.mouseDragged(mouseX, mouseY, mouseKey, dragX, dragY)) return true;
         }
 
+        return this.mouseDrag(mouseX, mouseY, mouseKey, dragX, dragY);
+    }
+
+    public boolean mouseDrag(double mouseX, double mouseY, int mouseKey, double dragX, double dragY) {
         return false;
+    }
+
+    @Override
+    public final boolean isMouseOver(double mouseX, double mouseY) {
+        List<UIElement> children = this.getChildren();
+        for (int i = children.size() - 1; i >= 0; i--) {
+            UIElement element = children.get(i);
+            if (element.isMouseOver(mouseX, mouseY)) return true;
+        }
+
+        return this.isMouseOverCurrent(mouseX, mouseY);
+    }
+
+    public boolean isMouseOverCurrent(double mouseX, double mouseY) {
+        return this.contentArea.isInside(mouseX, mouseY);
     }
 }
