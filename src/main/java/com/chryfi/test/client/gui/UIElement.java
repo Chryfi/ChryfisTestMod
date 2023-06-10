@@ -176,7 +176,7 @@ public class UIElement extends GuiComponent implements GuiEventListener {
      */
     protected void _onClose() { }
 
-    public void render(GuiContext context) {
+    public void render(UIContext context) {
         if (UIScreen.debug) {
             GuiComponent.fill(new PoseStack(), this.flowArea.getX(), this.flowArea.getY(),
                     this.flowArea.getX() + this.flowArea.getWidth(), this.flowArea.getY() + this.flowArea.getHeight(),

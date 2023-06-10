@@ -2,18 +2,13 @@ package com.chryfi.test.client.gui;
 
 import com.chryfi.test.client.rendering.IMixinWindow;
 import com.chryfi.test.client.rendering.WindowHandler;
-import com.chryfi.test.utils.Color;
-import com.chryfi.test.utils.rendering.GLUtils;
-import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.joml.Math;
-import org.joml.Matrix4f;
 
 @OnlyIn(Dist.CLIENT)
 public class UIViewport extends UIElement {
@@ -38,7 +33,7 @@ public class UIViewport extends UIElement {
     }
 
     @Override
-    public void render(GuiContext context) {
+    public void render(UIContext context) {
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.enableTexture();
         RenderSystem.setShaderTexture(0, Minecraft.getInstance().getMainRenderTarget().getColorTextureId());

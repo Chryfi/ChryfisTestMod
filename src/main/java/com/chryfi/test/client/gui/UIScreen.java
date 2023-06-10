@@ -1,6 +1,5 @@
 package com.chryfi.test.client.gui;
 
-import com.chryfi.test.client.rendering.WindowHandler;
 import com.chryfi.test.utils.rendering.GLUtils;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -11,7 +10,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import org.checkerframework.checker.guieffect.qual.UI;
 import org.joml.Matrix4f;
 
 import static org.lwjgl.opengl.GL30.GL_FRAMEBUFFER;
@@ -25,6 +23,7 @@ public class UIScreen extends Screen {
         super(GameNarrator.NO_TITLE);
         this.minecraft = minecraft;
 
+        debug = true;
         this.root = new UIElement();
 
         UIPropertyBuilder.setup(this.root)
@@ -96,7 +95,7 @@ public class UIScreen extends Screen {
         /* ensure GUI is rendered on top of Minecraft, as Minecraft viewport will be rendered later */
         stack.translate(0, 0, 1000F);
 
-        GuiContext context = new GuiContext(mouseX, mouseY, partialTicks);
+        UIContext context = new UIContext(mouseX, mouseY, partialTicks);
 
         this.root.render(context);
 

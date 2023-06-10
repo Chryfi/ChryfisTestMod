@@ -1,9 +1,5 @@
 package com.chryfi.test.client.gui;
 
-import com.chryfi.test.utils.Color;
-import com.mojang.blaze3d.vertex.PoseStack;
-import org.joml.Vector2i;
-
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +47,7 @@ public class UIPanelGrid extends UIElement {
         }
     }
 
-    public void render(GuiContext context) {
+    public void render(UIContext context) {
         /*Vector2i scale = this.calculateGlobalScale(context);
         Vector2i pos = this.calculateGlobalPos(context);
         Vector2i posEnd = new Vector2i(pos).add(scale);
