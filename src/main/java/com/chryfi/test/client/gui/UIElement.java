@@ -150,8 +150,8 @@ public class UIElement extends GuiComponent implements GuiEventListener {
      * Calculates and caches the positions, widths and heights.
      * This should be called before the first render and when resizing.
      */
-    public void resize() {
-        this.getTransformation().resize();
+    public void resize(DocumentFlowRow parentRow) {
+        this.getTransformation().resize(parentRow);
     }
 
     /**

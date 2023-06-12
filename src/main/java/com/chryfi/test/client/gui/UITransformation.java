@@ -17,6 +17,7 @@ public class UITransformation {
     private LengthUnit anchorY = new LengthUnit(0);
     private Unit width = new Unit(0);
     private Unit height = new Unit(0);
+    private boolean wrap = true;
     /**
      * padding: top, right, bottom, left
      */
@@ -66,6 +67,14 @@ public class UITransformation {
         return this.height;
     }
 
+    public boolean isWrap() {
+        return this.wrap;
+    }
+
+    public void setWrap(boolean wrap) {
+        this.wrap = wrap;
+    }
+
 
     /*
      * PADDING
@@ -109,17 +118,10 @@ public class UITransformation {
     }
 
     /**
-     * Entry point for resizing the children
-     */
-    public void resize() {
-        this.resize(new DocumentFlowRow());
-    }
-
-    /**
      * Recursive method for resizing traversing the tree.
      * @param parentRow
      */
-    private void resize(DocumentFlowRow parentRow) {
+    public void resize(DocumentFlowRow parentRow) {
         /*
          * Reset the areas for a clean start.
          */
@@ -284,16 +286,18 @@ public class UITransformation {
     protected void calculateDocumentFlow(DocumentFlowRow row, UIElement target, DocumentFlowRow.AreaNode root) {
         if (row.getLast().isEmpty()) return;
 
+        final boolean parentWrap = this.target.getParent().isEmpty() || this.target.getParent().get().getTransformation().isWrap();
         final Area parentInnerArea = this.getParentInnerArea();
 
         int occupiedWidth = row.getWidth();
 
-        if (parentInnerArea.getWidth() - occupiedWidth >= target.getFlowArea().getWidth()) {
+        root.addY(row.getY() - parentInnerArea.getY());
+
+        if (parentInnerArea.getWidth() - occupiedWidth >= target.getFlowArea().getWidth() || !parentWrap) {
             root.addX(occupiedWidth);
-            root.addY(row.getY() - parentInnerArea.getY());
         } else {
             /* element doesn't fit -> breaks into new row */
-            root.addY(row.getY() + row.getMaxHeight() - parentInnerArea.getY());
+            root.addY(row.getMaxHeight());
             row.end();
         }
     }

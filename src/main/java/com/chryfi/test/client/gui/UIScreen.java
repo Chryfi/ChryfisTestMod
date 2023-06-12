@@ -45,7 +45,7 @@ public class UIScreen extends Screen {
         UIElement row5 = TestStuff.createTestRow(new UIElement(), new UIElement(), new UIElement(), new UIElement(), new UIElement());
         UIPropertyBuilder.setup(row5).width(1F).height(0.1F);
 
-        this.root.addChildren(row1, row2, row3, row4, row5);
+        this.root.addChildren(TestStuff.bigChungusTest());
 
         viewport.addChildren(row5);
     }
@@ -60,7 +60,7 @@ public class UIScreen extends Screen {
                 .height(GLUtils.getGLFWWindowSize()[1])
                 .width(GLUtils.getGLFWWindowSize()[0]);
 
-        this.root.resize();
+        this.root.resize(new DocumentFlowRow());
     }
 
     @Override
