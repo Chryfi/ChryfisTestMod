@@ -35,10 +35,11 @@ public class TestStuff {
     }
 
     public static UIElement bigChungusTest() {
-        UIElement wrapper = new UIElement();
+        UIElement wrapper = new UIViewport();
         UIPropertyBuilder.setup(wrapper)
                 .width(1F)
-                .height(1F);
+                .height(1F)
+                .paddingLeft(64);
 
         UIElement test1 = new UIElement();
         UIPropertyBuilder.setup(test1)
@@ -46,7 +47,7 @@ public class TestStuff {
                 .height(0.15F)
                 .marginBottom(100)
                 .marginTop(50)
-                .marginLeft(0.25F);
+                .marginLeft(0.1F);
 
         UIElement test2 = new UIElement();
         UIPropertyBuilder.setup(test2)
@@ -79,32 +80,47 @@ public class TestStuff {
         UIElement test6 = new UIElement();
         UIPropertyBuilder.setup(test6)
                 .width(300)
-                .height(0.2F)
+                .height(150)
                 .marginLeft(50)
                 .marginTop(40);
 
         UIElement test7 = new UIElement();
         UIPropertyBuilder.setup(test7)
-                .width(700)
-                .height(0.35F)
-                .marginLeft(50)
+                .widthAuto()
+                .heightAuto()
                 .marginTop(40)
                 .paddingLeft(100)
                 .paddingRight(100);
 
+        test7.getTransformation().setWrap(false);
+
         UIElement test8 = new UIElement();
         UIPropertyBuilder.setup(test8)
-                .width(700)
-                .height(0.1F);
+                .width(900)
+                .height(50);
 
         UIElement test9 = new UIElement();
         UIPropertyBuilder.setup(test9)
-                .width(600)
-                .height(0.1F);
+                .width(500)
+                .height(125).heightAuto();
 
-        test7.addChildren(test9);
+        UIElement test91 = new UIElement();
+        UIPropertyBuilder.setup(test91)
+                .width(200)
+                .height(25)
+                .marginTop(150)
+                .marginLeft(25);
+        test9.addChildren(test91);
 
-        wrapper.addChildren(test1, test2, test3, test4, test5, test6, test7, test8);
+        UIElement test10 = new UIElement();
+        UIPropertyBuilder.setup(test10)
+                .width(550)
+                .height(150)
+                .marginTop(200);
+
+        test7.addChildren(test9, test10, test8, test6);
+
+        wrapper.addChildren(test7);
 
         return wrapper;
     }
