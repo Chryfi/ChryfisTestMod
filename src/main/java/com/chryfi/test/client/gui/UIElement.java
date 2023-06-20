@@ -1,5 +1,6 @@
 package com.chryfi.test.client.gui;
 
+import com.chryfi.test.client.gui.utils.UIRendering;
 import com.chryfi.test.utils.Color;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.GuiComponent;
@@ -364,41 +365,7 @@ public class UIElement extends GuiComponent implements GuiEventListener {
                     this.contentArea.getX() + this.contentArea.getWidth(), this.contentArea.getY() + this.contentArea.getHeight(),
                     this.background.getRGBAColor());*/
 
-            this.vLine(new PoseStack(), this.contentArea.getX(),
-                    this.contentArea.getY() - 1,
-                    this.contentArea.getY() + this.contentArea.getHeight(),
-                    new Color(0,0,0, 1).getRGBAColor());
-            this.vLine(new PoseStack(), this.contentArea.getX() + 1,
-                    this.contentArea.getY() - 1,
-                    this.contentArea.getY() + this.contentArea.getHeight(),
-                    new Color(0,0,0, 1).getRGBAColor());
-
-            this.vLine(new PoseStack(), this.contentArea.getX() + this.contentArea.getWidth() - 1,
-                    this.contentArea.getY() - 1,
-                    this.contentArea.getY() + this.contentArea.getHeight(),
-                    new Color(0,0,0, 1).getRGBAColor());
-            this.vLine(new PoseStack(), this.contentArea.getX() + this.contentArea.getWidth() - 2,
-                    this.contentArea.getY() - 1,
-                    this.contentArea.getY() + this.contentArea.getHeight(),
-                    new Color(0,0,0, 1).getRGBAColor());
-
-            this.hLine(new PoseStack(), this.contentArea.getX(),
-                    this.contentArea.getX() + this.contentArea.getWidth() - 1,
-                    this.contentArea.getY(),
-                    new Color(0,0,0, 1).getRGBAColor());
-            this.hLine(new PoseStack(), this.contentArea.getX(),
-                    this.contentArea.getX() + this.contentArea.getWidth() - 1,
-                    this.contentArea.getY() + 1,
-                    new Color(0,0,0, 1).getRGBAColor());
-
-            this.hLine(new PoseStack(), this.contentArea.getX(),
-                    this.contentArea.getX() + this.contentArea.getWidth() - 1,
-                    this.contentArea.getY() + this.contentArea.getHeight() - 1,
-                    new Color(0,0,0, 1).getRGBAColor());
-            this.hLine(new PoseStack(), this.contentArea.getX(),
-                    this.contentArea.getX() + this.contentArea.getWidth() - 1,
-                    this.contentArea.getY() + this.contentArea.getHeight() - 2,
-                    new Color(0,0,0, 1).getRGBAColor());
+            UIRendering.renderBorder(this.contentArea, 3);
         }
 
         if (UIScreen.debug) {
