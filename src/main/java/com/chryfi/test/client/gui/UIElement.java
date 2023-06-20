@@ -51,7 +51,7 @@ public class UIElement extends GuiComponent implements GuiEventListener {
                 (float)Math.random(),
                 (float)Math.random());
 
-        UIPropertyBuilder.setup(this).width(1F);
+        this.width(1F);
     }
 
     /*
@@ -65,6 +65,182 @@ public class UIElement extends GuiComponent implements GuiEventListener {
 
     public UIElement backgroundColor(float r, float g, float b) {
         return this.backgroundColor(r, g, b, 1F);
+    }
+
+    public UIElement relative() {
+        this.getTransformation().setPositionType(UITransformation.POSITION.RELATIVE);
+        return this;
+    }
+
+    public UIElement absolute() {
+        this.getTransformation().setPositionType(UITransformation.POSITION.ABSOLUTE);
+        return this;
+    }
+
+    public UIElement x(float x) {
+        this.getTransformation().getX().setValue(x);
+        return this;
+    }
+
+    public UIElement x(int x) {
+        this.getTransformation().getX().setValue(x);
+        return this;
+    }
+
+    public UIElement y(float y) {
+        this.getTransformation().getY().setValue(y);
+        return this;
+    }
+
+    public UIElement y(int y) {
+        this.getTransformation().getY().setValue(y);
+        return this;
+    }
+
+    public UIElement anchorX(float x) {
+        this.getTransformation().getAnchorX().setValue(x);
+        return this;
+    }
+
+    public UIElement anchorX(int x) {
+        this.getTransformation().getAnchorX().setValue(x);
+        return this;
+    }
+
+    public UIElement anchorY(float y) {
+        this.getTransformation().getAnchorY().setValue(y);
+        return this;
+    }
+
+    public UIElement anchorY(int y) {
+        this.getTransformation().getAnchorY().setValue(y);
+        return this;
+    }
+
+    public UIElement width(int value) {
+        this.getTransformation().getWidth().setValue(value);
+        return this;
+    }
+
+    public UIElement width(float value) {
+        this.getTransformation().getWidth().setValue(value);
+        return this;
+    }
+
+    public UIElement widthAuto() {
+        this.getTransformation().getWidth().setAuto();
+        return this;
+    }
+
+    public UIElement height(int value) {
+        this.getTransformation().getHeight().setValue(value);
+        return this;
+    }
+
+    public UIElement height(float value) {
+        this.getTransformation().getHeight().setValue(value);
+        return this;
+    }
+
+    public UIElement heightAuto() {
+        this.getTransformation().getHeight().setAuto();
+        return this;
+    }
+
+
+    /*
+     * PADDING
+     */
+
+
+    public UIElement paddingTop(float p) {
+        this.getTransformation().getPaddingTop().setValue(p);
+        return this;
+    }
+
+    public UIElement paddingTop(int p) {
+        this.getTransformation().getPaddingTop().setValue(p);
+        return this;
+    }
+
+    public UIElement paddingBottom(float p) {
+        this.getTransformation().getPaddingBottom().setValue(p);
+        return this;
+    }
+
+    public UIElement paddingBottom(int p) {
+        this.getTransformation().getPaddingBottom().setValue(p);
+        return this;
+    }
+
+    public UIElement paddingLeft(float p) {
+        this.getTransformation().getPaddingLeft().setValue(p);
+        return this;
+    }
+
+    public UIElement paddingLeft(int p) {
+        this.getTransformation().getPaddingLeft().setValue(p);
+        return this;
+    }
+
+    public UIElement paddingRight(float p) {
+        this.getTransformation().getPaddingRight().setValue(p);
+        return this;
+    }
+
+    public UIElement paddingRight(int p) {
+        this.getTransformation().getPaddingRight().setValue(p);
+        return this;
+    }
+
+
+    /*
+     * MARGIN
+     */
+
+    public UIElement marginTop(float value) {
+        this.getTransformation().getMarginTop().setValue(value);
+        return this;
+    }
+
+    public UIElement marginTop(int value) {
+        this.getTransformation().getMarginTop().setValue(value);
+        return this;
+    }
+
+    public UIElement marginRight(float value) {
+        this.getTransformation().getMarginRight().setValue(value);
+        return this;
+    }
+
+    public UIElement marginRight(int value) {
+        this.getTransformation().getMarginRight().setValue(value);
+        return this;
+    }
+
+    public UIElement marginBottom(float value) {
+        this.getTransformation().getMarginBottom().setValue(value);
+        return this;
+    }
+
+    public UIElement marginBottom(int value) {
+        this.getTransformation().getMarginBottom().setValue(value);
+        return this;
+    }
+
+    public UIElement marginLeft(float value) {
+        this.getTransformation().getMarginLeft().setValue(value);
+        return this;
+    }
+
+    public UIElement marginLeft(int value) {
+        this.getTransformation().getMarginLeft().setValue(value);
+        return this;
+    }
+
+    public UIElement wrap(boolean wrap) {
+        this.getTransformation().setWrap(wrap);
+        return this;
     }
 
     /*

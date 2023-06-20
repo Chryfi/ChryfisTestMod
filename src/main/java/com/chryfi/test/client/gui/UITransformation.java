@@ -17,6 +17,9 @@ public class UITransformation {
     private LengthUnit anchorY = new LengthUnit(0);
     private Unit width = new Unit(0);
     private Unit height = new Unit(0);
+    /**
+     * Whether to break the elements into a new row when they don't fit anymore.
+     */
     private boolean wrap = true;
     /**
      * padding: top, right, bottom, left

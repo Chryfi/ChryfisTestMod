@@ -26,8 +26,7 @@ public class UIScreen extends Screen {
         debug = true;
         this.root = new UIElement();
 
-        UIPropertyBuilder.setup(this.root)
-                .height(GLUtils.getGLFWWindowSize()[1])
+        this.root.height(GLUtils.getGLFWWindowSize()[1])
                 .width(GLUtils.getGLFWWindowSize()[0])
                 .backgroundColor(0.0F,0.0F,0.0F, 0.0F);
 
@@ -35,15 +34,15 @@ public class UIScreen extends Screen {
 
 
         UIElement row1 = TestStuff.createTestRow(new UIElement(), new UIElement(), new UIElement(), new UIElement());
-        UIPropertyBuilder.setup(row1).width(0.5F);
+        row1.width(0.5F);
         UIElement row2 = TestStuff.createTestRow(new UIElement(), viewport, new UIElement());
-        UIPropertyBuilder.setup(row2).width(1F).height(0.25F);
+        row2.width(1F).height(0.25F);
         UIElement row3 = TestStuff.createTestRow(new UIElement(), new UIElement(), new UIElement());
-        UIPropertyBuilder.setup(row3).width(0.5F);
+        row3.width(0.5F);
         UIElement row4 = TestStuff.createTestRow(new UIElement(), new UIElement(), new UIElement());
-        UIPropertyBuilder.setup(row4).width(1F).paddingLeft(0.5F);
+        row4.width(1F).paddingLeft(0.5F);
         UIElement row5 = TestStuff.createTestRow(new UIElement(), new UIElement(), new UIElement(), new UIElement(), new UIElement());
-        UIPropertyBuilder.setup(row5).width(1F).height(0.1F);
+        row5.width(1F).height(0.1F);
 
         this.root.addChildren(TestStuff.bigChungusTest());
 
@@ -56,8 +55,7 @@ public class UIScreen extends Screen {
      */
     @Override
     protected void init() {
-        UIPropertyBuilder.setup(this.root)
-                .height(GLUtils.getGLFWWindowSize()[1])
+        this.root.height(GLUtils.getGLFWWindowSize()[1])
                 .width(GLUtils.getGLFWWindowSize()[0]);
 
         this.root.resize(new DocumentFlowRow());
