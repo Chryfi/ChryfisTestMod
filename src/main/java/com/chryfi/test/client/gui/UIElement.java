@@ -354,6 +354,14 @@ public class UIElement extends GuiComponent implements GuiEventListener {
     protected void _onClose() { }
 
     public void render(UIContext context) {
+        this.renderThis(context);
+
+        for (UIElement child : this.getChildren()) {
+            child.render(context);
+        }
+    }
+
+    public void renderThis(UIContext context) {
         if (UIScreen.debug) {
             GuiComponent.fill(new PoseStack(), this.flowArea.getX(), this.flowArea.getY(),
                     this.flowArea.getX() + this.flowArea.getWidth(), this.flowArea.getY() + this.flowArea.getHeight(),
@@ -361,20 +369,17 @@ public class UIElement extends GuiComponent implements GuiEventListener {
         }
 
         if (this.background != null) {
-            /*GuiComponent.fill(new PoseStack(), this.contentArea.getX(), this.contentArea.getY(),
+            GuiComponent.fill(new PoseStack(), this.contentArea.getX(), this.contentArea.getY(),
                     this.contentArea.getX() + this.contentArea.getWidth(), this.contentArea.getY() + this.contentArea.getHeight(),
-                    this.background.getRGBAColor());*/
+                    this.background.getRGBAColor());
 
-            UIRendering.renderBorder(this.contentArea, 3);
+
+            if (UIScreen.debug) UIRendering.renderBorder(this.contentArea, 3);
         }
 
         if (UIScreen.debug) {
             this.drawMargins();
             this.drawPaddings();
-        }
-
-        for (UIElement child : this.getChildren()) {
-            child.render(context);
         }
     }
 
@@ -422,7 +427,7 @@ public class UIElement extends GuiComponent implements GuiEventListener {
      */
 
     @Override
-    public final boolean mouseClicked(double mouseX, double mouseY, int mouseKey) {
+    public boolean mouseClicked(double mouseX, double mouseY, int mouseKey) {
         List<UIElement> children = this.getChildren();
         for (int i = children.size() - 1; i >= 0; i--) {
             UIElement element = children.get(i);
@@ -437,7 +442,7 @@ public class UIElement extends GuiComponent implements GuiEventListener {
     }
 
     @Override
-    public final boolean mouseReleased(double mouseX, double mouseY, int mouseKey) {
+    public boolean mouseReleased(double mouseX, double mouseY, int mouseKey) {
         List<UIElement> children = this.getChildren();
         for (int i = children.size() - 1; i >= 0; i--) {
             UIElement element = children.get(i);
@@ -452,7 +457,7 @@ public class UIElement extends GuiComponent implements GuiEventListener {
     }
 
     @Override
-    public final boolean mouseDragged(double mouseX, double mouseY, int mouseKey, double dragX, double dragY) {
+    public boolean mouseDragged(double mouseX, double mouseY, int mouseKey, double dragX, double dragY) {
         List<UIElement> children = this.getChildren();
         for (int i = children.size() - 1; i >= 0; i--) {
             UIElement element = children.get(i);
@@ -467,17 +472,17 @@ public class UIElement extends GuiComponent implements GuiEventListener {
     }
 
     @Override
-    public final boolean isMouseOver(double mouseX, double mouseY) {
+    public boolean isMouseOver(double mouseX, double mouseY) {
         List<UIElement> children = this.getChildren();
         for (int i = children.size() - 1; i >= 0; i--) {
             UIElement element = children.get(i);
             if (element.isMouseOver(mouseX, mouseY)) return true;
         }
 
-        return this.isMouseOverCurrent(mouseX, mouseY);
+        return this.isMouseOverThis(mouseX, mouseY);
     }
 
-    public boolean isMouseOverCurrent(double mouseX, double mouseY) {
+    public boolean isMouseOverThis(double mouseX, double mouseY) {
         return this.contentArea.isInside(mouseX, mouseY);
     }
 }
