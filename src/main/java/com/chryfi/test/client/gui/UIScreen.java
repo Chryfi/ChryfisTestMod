@@ -1,5 +1,6 @@
 package com.chryfi.test.client.gui;
 
+import com.chryfi.test.client.rendering.WindowHandler;
 import com.chryfi.test.utils.rendering.GLUtils;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -22,8 +23,8 @@ public class UIScreen extends Screen {
     public UIScreen(Minecraft minecraft) {
         super(GameNarrator.NO_TITLE);
         this.minecraft = minecraft;
-
-        debug = true;
+        WindowHandler.overwrite = true;
+        debug = false;
         this.root = new UIElement();
 
         this.root.height(GLUtils.getGLFWWindowSize()[1])
@@ -44,7 +45,12 @@ public class UIScreen extends Screen {
         UIElement row5 = TestStuff.createTestRow(new UIElement(), new UIElement(), new UIElement(), new UIElement(), new UIElement());
         row5.width(1F).height(0.1F);
 
-        this.root.addChildren(TestStuff.bigChungusTest());
+        UIPanelGrid rootGrid = new UIPanelGrid(new UIPanel());
+        rootGrid.width(1F).height(1F);
+        rootGrid.subdivide(UIPanelGrid.DIRECTION.HORIZONTAL, 0.5F);
+        rootGrid.getGrid0().subdivide(UIPanelGrid.DIRECTION.VERTICAL, 0.25F);
+
+        this.root.addChildren(rootGrid);
 
         viewport.addChildren(row5);
     }
@@ -75,6 +81,8 @@ public class UIScreen extends Screen {
 
     @Override
     public void render(PoseStack stack, int mouseX, int mouseY, float partialTicks) {
+        if (this.minecraft == null) return;
+
         int windowWidth = GLUtils.getGLFWWindowSize()[0];
         int windowHeight = GLUtils.getGLFWWindowSize()[1];
 
@@ -93,7 +101,7 @@ public class UIScreen extends Screen {
         /* ensure GUI is rendered on top of Minecraft, as Minecraft viewport will be rendered later */
         stack.translate(0, 0, 1000F);
 
-        UIContext context = new UIContext(mouseX, mouseY, partialTicks);
+        UIContext context = new UIContext((int) this.minecraft.mouseHandler.xpos(), (int) this.minecraft.mouseHandler.ypos(), partialTicks);
 
         this.root.render(context);
 
