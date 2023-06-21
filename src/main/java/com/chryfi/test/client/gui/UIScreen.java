@@ -13,12 +13,17 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.joml.Matrix4f;
 
+import static org.lwjgl.glfw.GLFW.glfwGetCursorPos;
+import static org.lwjgl.glfw.GLFW.glfwSetCursor;
 import static org.lwjgl.opengl.GL30.GL_FRAMEBUFFER;
 
 @OnlyIn(Dist.CLIENT)
 public class UIScreen extends Screen {
     private UIElement root;
+    private final UIContext context = new UIContext();
     public static boolean debug;
+    private double lastMouseX;
+    private double lastMouseY;
 
     public UIScreen(Minecraft minecraft) {
         super(GameNarrator.NO_TITLE);
@@ -45,7 +50,7 @@ public class UIScreen extends Screen {
         UIElement row5 = TestStuff.createTestRow(new UIElement(), new UIElement(), new UIElement(), new UIElement(), new UIElement());
         row5.width(1F).height(0.1F);
 
-        UIPanelGrid rootGrid = new UIPanelGrid(new UIPanel());
+        UIPanelGrid rootGrid = new UIPanelGrid(new UIPanel(new UIElement(), new UIViewport()));
         rootGrid.width(1F).height(1F);
         rootGrid.subdivide(UIPanelGrid.DIRECTION.HORIZONTAL, 0.5F);
         rootGrid.getGrid0().subdivide(UIPanelGrid.DIRECTION.VERTICAL, 0.25F);
@@ -101,7 +106,15 @@ public class UIScreen extends Screen {
         /* ensure GUI is rendered on top of Minecraft, as Minecraft viewport will be rendered later */
         stack.translate(0, 0, 1000F);
 
-        UIContext context = new UIContext((int) this.minecraft.mouseHandler.xpos(), (int) this.minecraft.mouseHandler.ypos(), partialTicks);
+        this.context.setMouse((int) this.minecraft.mouseHandler.xpos(), (int) this.minecraft.mouseHandler.ypos());
+        this.context.partialTicks = partialTicks;
+        if (this.context.cursorChanged()) {
+            if (this.context.queueCursorReset) {
+                this.context.resetCursor();
+            } else {
+                this.context.queueCursorReset = true;
+            }
+        }
 
         this.root.render(context);
 
@@ -115,17 +128,55 @@ public class UIScreen extends Screen {
     public void tick() { }
 
     @Override
+    public void mouseMoved(double mouseX, double mouseY) {
+        double[] mouseXPoint = new double[1];
+        double[] mouseYPoint = new double[1];
+        glfwGetCursorPos(Minecraft.getInstance().getWindow().getWindow(),
+                mouseXPoint, mouseYPoint);
+
+        mouseX = mouseXPoint[0];
+        mouseY = mouseYPoint[0];
+
+        this.root.mouseMoved(mouseX, mouseY);
+    }
+
+    @Override
+    public void afterMouseMove() {
+        double[] mouseXPoint = new double[1];
+        double[] mouseYPoint = new double[1];
+        glfwGetCursorPos(Minecraft.getInstance().getWindow().getWindow(),
+                mouseXPoint, mouseYPoint);
+
+        this.lastMouseX = mouseXPoint[0];
+        this.lastMouseY = mouseYPoint[0];
+    }
+
+    @Override
     public boolean mouseClicked(double mouseX, double mouseY, int mouseKey) {
+        mouseX = this.minecraft.mouseHandler.xpos();
+        mouseY = this.minecraft.mouseHandler.ypos();
         return this.root.mouseClicked(mouseX, mouseY, mouseKey);
     }
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int mouseKey) {
+        mouseX = this.minecraft.mouseHandler.xpos();
+        mouseY = this.minecraft.mouseHandler.ypos();
         return this.root.mouseReleased(mouseX, mouseY, mouseKey);
     }
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int mouseKey, double dragX, double dragY) {
+        double[] mouseXPoint = new double[1];
+        double[] mouseYPoint = new double[1];
+        glfwGetCursorPos(Minecraft.getInstance().getWindow().getWindow(),
+                mouseXPoint, mouseYPoint);
+
+        mouseX = mouseXPoint[0];
+        mouseY = mouseYPoint[0];
+        dragX = mouseX - this.lastMouseX;
+        dragY = mouseY - this.lastMouseY;
+
         return this.root.mouseDragged(mouseX, mouseY, mouseKey, dragX, dragY);
     }
 }

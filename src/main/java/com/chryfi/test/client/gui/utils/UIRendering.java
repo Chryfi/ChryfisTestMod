@@ -7,7 +7,7 @@ import net.minecraft.client.gui.GuiComponent;
 
 public class UIRendering {
     public static void renderBorder(Area area, int thickness) {
-        int color = new Color(1,1,1, 1).getRGBAColor();
+        int color = new Color(0,0,0, 1).getRGBAColor();
 
         int x00 = area.getX();
         int x01 = x00 + thickness;

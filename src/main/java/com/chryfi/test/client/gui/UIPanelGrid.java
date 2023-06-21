@@ -2,6 +2,7 @@ package com.chryfi.test.client.gui;
 
 import com.chryfi.test.client.gui.utils.UIRendering;
 import net.minecraft.client.Minecraft;
+import org.checkerframework.checker.guieffect.qual.UI;
 
 import javax.annotation.Nullable;
 
@@ -27,6 +28,7 @@ public class UIPanelGrid extends UIElement {
      */
     private UIPanelGrid grid1;
     private final int borderThickness = 3;
+    private boolean awaitDragging = false;
 
     public UIPanelGrid(UIPanel panel) {
         this.setPanel(panel);
@@ -46,7 +48,7 @@ public class UIPanelGrid extends UIElement {
 
         this.direction = direction;
         this.grid0 = new UIPanelGrid(this.panel);
-        this.grid1 = new UIPanelGrid(new UIPanel());
+        this.grid1 = new UIPanelGrid(new UIPanel(new UIElement(), new UIElement()));
         this.grid0.parent = this;
         this.grid1.parent = this;
         this.panel = null;
@@ -82,7 +84,7 @@ public class UIPanelGrid extends UIElement {
     @Override
     public List<UIElement> getChildren() {
         if (this.panel != null) {
-            return new ArrayList<>(List.of(this.panel));
+            return new ArrayList<>(Arrays.asList(this.panel));
         }
 
         return new ArrayList<>(Arrays.asList(this.grid0, this.grid1));
@@ -97,7 +99,7 @@ public class UIPanelGrid extends UIElement {
         for (UIElement child : this.getChildren()) {
             child.render(context);
         }
-
+        /* render after children so the border overlays the panels */
         this.renderThis(context);
     }
 
@@ -106,6 +108,17 @@ public class UIPanelGrid extends UIElement {
         UIRendering.renderBorder(this.contentArea, this.borderThickness);
 
         if (this.panel != null) return;
+
+        if (this.isOnEdge(context.mouseX, context.mouseY)) {
+            if (this.direction == DIRECTION.HORIZONTAL) {
+                context.setCursor(GLFW_VRESIZE_CURSOR);
+            } else {
+                context.setCursor(GLFW_HRESIZE_CURSOR);
+            }
+        }
+    }
+
+    protected boolean isOnEdge(double x, double y) {
         Area intersectionLine;
         Area grid0Area = this.grid0.getFlowArea();
 
@@ -117,13 +130,28 @@ public class UIPanelGrid extends UIElement {
                     grid0Area.getY(), this.grid0.borderThickness + this.grid1.borderThickness, grid0Area.getHeight());
         }
 
-        if (intersectionLine.isInside(context.mouseX, context.mouseY)) {
-            if (this.direction == DIRECTION.HORIZONTAL) {
-                glfwSetCursor(Minecraft.getInstance().getWindow().getWindow(), glfwCreateStandardCursor(GLFW_VRESIZE_CURSOR));
-            } else {
-                glfwSetCursor(Minecraft.getInstance().getWindow().getWindow(), glfwCreateStandardCursor(GLFW_HRESIZE_CURSOR));
-            }
+        return intersectionLine.isInside(x, y);
+    }
+
+    @Override
+    public boolean mouseClick(double mouseX, double mouseY, int mouseKey) {
+        if (this.panel == null && this.isOnEdge(mouseX, mouseY)) {
+            this.awaitDragging = true;
+
+            return true;
         }
+
+        return false;
+    }
+
+    public boolean mouseRelease(double mouseX, double mouseY, int mouseKey) {
+        if (this.awaitDragging) {
+            this.awaitDragging = false;
+
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -133,14 +161,32 @@ public class UIPanelGrid extends UIElement {
      */
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int mouseKey, double dragX, double dragY) {
+        if (this.mouseDrag(mouseX, mouseY, mouseKey, dragX, dragY)) return true;
+
         for (UIElement child : this.getChildren()) {
-            if (child.mouseDragged(mouseX, mouseY, mouseKey, dragX, dragY)) return true;
+            if (child.mouseDragged(mouseX, mouseY, mouseKey, dragX, dragY)) {
+                return true;
+            }
         }
 
-        return this.mouseDrag(mouseX, mouseY, mouseKey, dragX, dragY);
+        return false;
     }
 
     public boolean mouseDrag(double mouseX, double mouseY, int mouseKey, double dragX, double dragY) {
+        if (this.awaitDragging) {
+            if (this.direction == DIRECTION.VERTICAL) {
+                this.grid0.width((int)(mouseX - this.grid0.contentArea.getX()));
+                this.grid1.width((int)(this.grid1.contentArea.getWidth() - (mouseX - this.grid1.contentArea.getX())));
+            } else {
+                this.grid0.height((int)(mouseY - this.grid0.contentArea.getY()));
+                this.grid1.height((int)(this.grid1.contentArea.getHeight() - (mouseY - this.grid1.contentArea.getY())));
+            }
+
+            this.resize(new DocumentFlowRow());
+
+            return true;
+        }
+
         return false;
     }
 
