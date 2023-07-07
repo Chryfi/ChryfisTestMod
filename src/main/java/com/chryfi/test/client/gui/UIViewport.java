@@ -16,14 +16,12 @@ public class UIViewport extends UIElement {
     public void onAreasCalculated() {
         WindowHandler.x = this.contentArea.getX();
         WindowHandler.y = this.contentArea.getY();
-        WindowHandler.width = this.contentArea.getWidth();
-        WindowHandler.height = this.contentArea.getHeight();
+        WindowHandler.width = Math.clamp(1, 8000, this.contentArea.getWidth());
+        WindowHandler.height = Math.clamp(1, 8000, this.contentArea.getHeight());
         WindowHandler.resize = true;
         WindowHandler.overwrite = true;
 
-        Object window = Minecraft.getInstance().getWindow();
-        ((IMixinWindow) window).resize(Math.clamp(1, Integer.MAX_VALUE, this.contentArea.getWidth()),
-                Math.clamp(1, Integer.MAX_VALUE, this.contentArea.getHeight()));
+        WindowHandler.queueResize(WindowHandler.width, WindowHandler.height);
     }
 
     @Override
@@ -46,7 +44,7 @@ public class UIViewport extends UIElement {
 
         BufferUploader.drawWithShader(bufferBuilder.end());
 
-        if (UIScreen.debug) {
+        if (context.isDebug()) {
             this.drawMargins();
             this.drawPaddings();
         }

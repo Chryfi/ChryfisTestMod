@@ -34,7 +34,7 @@ public class TestStuff {
         UIElement wrapper = new UIViewport()
                 .width(1F)
                 .height(1F)
-                .paddingLeft(64);
+                .paddingLeft(84).paddingTop(10).paddingBottom(0.2F).paddingRight(50);
 
         UIElement test1 = new UIElement()
                 .width(0.35F)
@@ -73,14 +73,16 @@ public class TestStuff {
                 .marginLeft(50)
                 .marginTop(40);
 
+        //TODO something about margin right - it doesn't influence the width here with width auto. Check HTML test, do we even need to care?
         UIElement test7 = new UIElement()
-                .widthAuto()
+                .width(1F)
                 .heightAuto()
                 .marginTop(40)
+                .marginRight(50).marginLeft(100)
                 .paddingLeft(100)
                 .paddingRight(100);
 
-        test7.getTransformation().setWrap(false);
+        //test7.getTransformation().setWrap(false);
 
         UIElement test8 = new UIElement()
                 .width(900)

@@ -7,6 +7,9 @@ import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import org.checkerframework.checker.units.qual.A;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,10 +18,10 @@ import java.util.Optional;
 
 /**
  * When overriding internal children storage behaviour, you need to override following methods:
- * {@link #getChildren()}, {@link #addChildren(UIElement...)} and {@link #removeChild(UIElement)}.
+ * {@link #getChildren()}, {@link #addChildren(UIElement...)}, {@link #replaceChild(UIElement, UIElement)} and {@link #removeChild(UIElement)}.
  */
 @OnlyIn(Dist.CLIENT)
-public class UIElement extends GuiComponent implements GuiEventListener {
+public class UIElement {
     /**
      * For debugging purpose
      */
@@ -248,14 +251,35 @@ public class UIElement extends GuiComponent implements GuiEventListener {
      * STYLES END
      */
 
+    @NotNull
+    public final UIElement getRoot() {
+        UIElement element = this;
+
+        while (element.getParent().isPresent()) {
+            element = element.getParent().get();
+        }
+
+        return element;
+    }
+
+    @Nullable
+    public Optional<UIContext> getRootContext() {
+        if (this.getRoot() instanceof UIRootElement) {
+            return Optional.of(((UIRootElement) this.getRoot()).getContext());
+        }
+
+        return Optional.empty();
+    }
 
     public void addChildren(UIElement... elements) {
         for (UIElement element : elements) {
+            //TODO this would call resize twice then (once in removeChild() and then in this method after adding)
             element.remove();
             element.parent = this;
         }
 
         this.children.addAll(Arrays.asList(elements));
+        this.getRoot().resize(new DocumentFlowRow());
     }
 
     /**
@@ -265,6 +289,41 @@ public class UIElement extends GuiComponent implements GuiEventListener {
      */
     public List<UIElement> getChildren() {
         return new ArrayList<>(this.children);
+    }
+
+    public void removeChild(UIElement child) {
+        this.children.remove(child);
+        child.parent = null;
+
+        this.getRoot().resize(new DocumentFlowRow());
+    }
+
+    /**
+     * Removes this element from the parent.
+     */
+    public void remove() {
+        if (this.parent != null) {
+            this.parent.removeChild(this);
+            this.parent = null;
+        }
+    }
+
+    public void replaceChild(UIElement child, UIElement replacement) {
+        if (child == null) return;
+
+        if (this.children.contains(child)) {
+            if (replacement == null) {
+                this.removeChild(child);
+
+                return;
+            }
+
+            this.children.set(this.children.indexOf(child), replacement);
+            replacement.parent = this;
+            child.parent = null;
+
+            this.getRoot().resize(new DocumentFlowRow());
+        }
     }
 
     public Optional<UIElement> getParent() {
@@ -309,21 +368,6 @@ public class UIElement extends GuiComponent implements GuiEventListener {
     }
 
     /**
-     * Removes this element from the parent.
-     */
-    public void remove() {
-        if (this.parent != null) {
-            this.parent.removeChild(this);
-            this.parent = null;
-        }
-    }
-
-    public void removeChild(UIElement child) {
-        this.children.remove(child);
-        child.parent = null;
-    }
-
-    /**
      * Calculates and caches the positions, widths and heights.
      * This should be called before the first render and when resizing.
      */
@@ -354,71 +398,71 @@ public class UIElement extends GuiComponent implements GuiEventListener {
     protected void _onClose() { }
 
     public void render(UIContext context) {
-        this.renderThis(context);
+        this.preRender(context);
 
         for (UIElement child : this.getChildren()) {
             child.render(context);
         }
+
+        this.postRender(context);
     }
 
-    public void renderThis(UIContext context) {
-        if (UIScreen.debug) {
+    /**
+     * Render after children have been rendered. Usually this should not be used to render clickable content.
+     * @param context
+     */
+    public void postRender(UIContext context) {
+
+    }
+
+    /**
+     * Render before children are rendered.
+     * @param context
+     */
+    public void preRender(UIContext context) {
+        if (context.isDebug()) {
             GuiComponent.fill(new PoseStack(), this.flowArea.getX(), this.flowArea.getY(),
                     this.flowArea.getX() + this.flowArea.getWidth(), this.flowArea.getY() + this.flowArea.getHeight(),
                     new Color(0F, 0.25F, 1F, 0.25F).getRGBAColor());
         }
 
         if (this.background != null) {
-            GuiComponent.fill(new PoseStack(), this.contentArea.getX(), this.contentArea.getY(),
-                    this.contentArea.getX() + this.contentArea.getWidth(), this.contentArea.getY() + this.contentArea.getHeight(),
-                    this.background.getRGBAColor());
-
-
-            if (UIScreen.debug) UIRendering.renderBorder(this.contentArea, 3);
+            //this.contentArea.render(this.background);
         }
 
-        if (UIScreen.debug) {
+        if (context.isDebug()) {
+            this.contentArea.renderBorder(1, new Color(1,1,1,1));
             this.drawMargins();
             this.drawPaddings();
         }
     }
 
     protected void drawMargins() {
-        GuiComponent.fill(new PoseStack(), this.contentArea.getX(), this.contentArea.getY() - this.margin[0],
-                this.contentArea.getX() + this.contentArea.getWidth(), this.contentArea.getY(),
-                new Color(1F, 0.5F, 0F, 0.5F).getRGBAColor());
+        Area marginTop = new Area(this.contentArea.getX(), this.flowArea.getY(), this.contentArea.getWidth(), this.margin[0]);
+        marginTop.render(new Color(1F, 0.5F, 0F, 0.5F));
 
-        GuiComponent.fill(new PoseStack(), this.contentArea.getX() - this.margin[3], this.contentArea.getY(),
-                this.contentArea.getX(), this.contentArea.getY() + this.contentArea.getHeight(),
-                new Color(1F, 0.5F, 0F, 0.5F).getRGBAColor());
+        Area marginLeft = new Area(this.flowArea.getX(), this.contentArea.getY(), this.margin[3], this.contentArea.getHeight());
+        marginLeft.render(new Color(1F, 0.5F, 0F, 0.5F));
 
-        GuiComponent.fill(new PoseStack(), this.contentArea.getX() + this.contentArea.getWidth(), this.contentArea.getY(),
-                this.contentArea.getX() + this.contentArea.getWidth() + this.margin[1], this.contentArea.getY() + this.contentArea.getHeight(),
-                new Color(1F, 0.5F, 0F, 0.5F).getRGBAColor());
+        Area marginRight = new Area(this.contentArea.getX() + this.contentArea.getWidth(), this.contentArea.getY(), this.margin[1], this.contentArea.getHeight());
+        marginRight.render(new Color(1F, 0.5F, 0F, 0.5F));
 
-        GuiComponent.fill(new PoseStack(), this.contentArea.getX(), this.contentArea.getY() + this.contentArea.getHeight(),
-                this.contentArea.getX() + this.contentArea.getWidth(), this.contentArea.getY() + this.contentArea.getHeight() + margin[2],
-                new Color(1F, 0.5F, 0F, 0.5F).getRGBAColor());
+        Area marginBottom = new Area(this.contentArea.getX(), this.contentArea.getY() + this.contentArea.getHeight(), this.contentArea.getWidth(), this.margin[2]);
+        marginBottom.render(new Color(0F, 1F, 0F, 0.5F));
     }
 
     protected void drawPaddings() {
-        GuiComponent.fill(new PoseStack(), this.innerArea.getX(), this.contentArea.getY(),
-                this.innerArea.getX() + this.innerArea.getWidth(), this.contentArea.getY() + this.padding[0],
-                new Color(0F, 1F, 0F, 0.5F).getRGBAColor());
-        /* left */
-        GuiComponent.fill(new PoseStack(), this.contentArea.getX(), this.innerArea.getY(),
-                this.innerArea.getX(), this.innerArea.getY() + this.innerArea.getHeight(),
-                new Color(0F, 1F, 0F, 0.5F).getRGBAColor());
-        /* right */
-        GuiComponent.fill(new PoseStack(), this.innerArea.getX() + this.innerArea.getWidth(), this.innerArea.getY(),
-                this.innerArea.getX() + this.innerArea.getWidth() + this.padding[1],
-                this.innerArea.getY() + this.innerArea.getHeight(),
-                new Color(0F, 1F, 0F, 0.5F).getRGBAColor());
+        Area paddingTop = new Area(this.innerArea.getX(), this.contentArea.getY(), this.innerArea.getWidth(), this.padding[0]);
+        paddingTop.render(new Color(0F, 1F, 0F, 0.5F));
 
-        GuiComponent.fill(new PoseStack(), this.innerArea.getX(), this.innerArea.getY() + this.innerArea.getHeight(),
-                this.innerArea.getX() + this.innerArea.getWidth(),
-                this.innerArea.getY() + this.innerArea.getHeight() + this.padding[2],
-                new Color(0F, 1F, 0F, 0.5F).getRGBAColor());
+        Area paddingLeft = new Area(this.contentArea.getX(), this.innerArea.getY(), this.padding[3], this.innerArea.getHeight());
+        paddingLeft.render(new Color(0F, 1F, 0F, 0.5F));
+
+        Area paddingRight = new Area(this.innerArea.getX() + this.innerArea.getWidth(), this.innerArea.getY(), this.padding[1], this.innerArea.getHeight());
+        paddingRight.render(new Color(0F, 1F, 0F, 0.5F));
+
+        Area paddingBottom = new Area(this.innerArea.getX(), this.innerArea.getY() + this.innerArea.getHeight(), this.innerArea.getWidth(), this.padding[2]);
+        paddingBottom.render(new Color(0F, 1F, 0F, 0.5F));
     }
 
 
@@ -426,63 +470,95 @@ public class UIElement extends GuiComponent implements GuiEventListener {
      * Mouse event capturing template pattern
      */
 
-    @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int mouseKey) {
+    /**
+     * The order of event propagation should match the order of rendering.
+     * The last rendered item should be the first to receive the event call.
+     * @param context
+     * @return
+     */
+    public final boolean mouseClicked(UIContext context) {
         List<UIElement> children = this.getChildren();
         for (int i = children.size() - 1; i >= 0; i--) {
             UIElement element = children.get(i);
-            if (element.mouseClicked(mouseX, mouseY, mouseKey)) return true;
+            if (element.mouseClicked(context)) return true;
         }
 
-        return this.mouseClick(mouseX, mouseY, mouseKey);
+        return this.mouseClick(context);
     }
 
-    public boolean mouseClick(double mouseX, double mouseY, int mouseKey) {
+    public boolean mouseClick(UIContext context) {
         return false;
     }
 
-    @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int mouseKey) {
+    /**
+     * The order of event propagation should match the order of rendering.
+     * The last rendered item should be the first to receive the event call.
+     * @param context
+     * @return
+     */
+    public final boolean mouseReleased(UIContext context) {
         List<UIElement> children = this.getChildren();
         for (int i = children.size() - 1; i >= 0; i--) {
             UIElement element = children.get(i);
-            if (element.mouseReleased(mouseX, mouseY, mouseKey)) return true;
+            if (element.mouseReleased(context)) return true;
         }
 
-        return this.mouseRelease(mouseX, mouseY, mouseKey);
+        return this.mouseRelease(context);
     }
 
-    public boolean mouseRelease(double mouseX, double mouseY, int mouseKey) {
+    public boolean mouseRelease(UIContext context) {
         return false;
     }
 
-    @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int mouseKey, double dragX, double dragY) {
+    /**
+     * Mouse dragging alone won't suffice. Elements need to catch whether they were clicked to determine
+     * if the dragging is meant to influence them. Therefore, the order of event propagation doesn't matter here.
+     * @param context
+     * @return
+     */
+    public boolean mouseDragged(UIContext context, double dragX, double dragY) {
         List<UIElement> children = this.getChildren();
         for (int i = children.size() - 1; i >= 0; i--) {
             UIElement element = children.get(i);
-            if (element.mouseDragged(mouseX, mouseY, mouseKey, dragX, dragY)) return true;
+            if (element.mouseDragged(context, dragX, dragY)) return true;
         }
 
-        return this.mouseDrag(mouseX, mouseY, mouseKey, dragX, dragY);
+        return this.mouseDrag(context, dragX, dragY);
     }
 
-    public boolean mouseDrag(double mouseX, double mouseY, int mouseKey, double dragX, double dragY) {
+    public boolean mouseDrag(UIContext context, double dragX, double dragY) {
         return false;
     }
 
-    @Override
-    public boolean isMouseOver(double mouseX, double mouseY) {
+    public final boolean isMouseOver(UIContext context) {
+        return this.contentArea.isInside(context.getMouseX(), context.getMouseY());
+    }
+
+    public void mouseMoved(UIContext context) {
         List<UIElement> children = this.getChildren();
         for (int i = children.size() - 1; i >= 0; i--) {
             UIElement element = children.get(i);
-            if (element.isMouseOver(mouseX, mouseY)) return true;
+
+            element.mouseMoved(context);
         }
 
-        return this.isMouseOverThis(mouseX, mouseY);
+        this.mouseMove(context);
     }
 
-    public boolean isMouseOverThis(double mouseX, double mouseY) {
-        return this.contentArea.isInside(mouseX, mouseY);
+    public void mouseMove(UIContext context) {
+    }
+
+    public final boolean keyPressed(UIContext context) {
+        List<UIElement> children = this.getChildren();
+        for (int i = children.size() - 1; i >= 0; i--) {
+            UIElement element = children.get(i);
+            if (element.keyPressed(context)) return true;
+        }
+
+        return this.keyPress(context);
+    }
+
+    public boolean keyPress(UIContext context) {
+        return false;
     }
 }
